@@ -1,0 +1,34 @@
+.progress {
+  position: relative;
+  width: 100%;
+  height: 20px;
+  background: #555;
+  border-radius: 10px;
+  box-shadow: inset 0 0 5px #000;
+}
+
+.progress__bar {
+  position: absolute;
+  width: 0;
+  height: 100%;
+  background: #0f0;
+  border-radius: 10px;
+  transition: width 0.25s ease-in-out;
+}
+
+.progress_flat {
+  position: relative;
+  width: 100%;
+  height: 20px;
+  background: #555;
+  box-shadow: inset 0 0 5px #000;
+}
+
+.progress__bar_flat {
+  position: absolute;
+  width: 0;
+  height: 100%;
+  background: #0f0;
+  /* transition: width 0.25s ease-in-out; */
+}
+//e

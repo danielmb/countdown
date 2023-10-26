@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --flip-gradient-color: #f5f5f5;
+}
+
+/*
+Create a style for this
+  background: ${({ position, color }): string =>
+    position === 'top'
+      ? `linear-gradient(${color} 50%, transparent 50%)`
+      : `linear-gradient(transparent 50%, ${color} 50%)`};
+*/
+
+.flip-gradient-top {
+  background: linear-gradient(var(--flip-gradient-color) 50%, transparent 50%);
+  background-size: 100% 200%;
+  background-position: top;
+  transition: background-position 0.5s ease-in-out;
+}
+
+.flip-gradient-bottom {
+  background: linear-gradient(transparent 50%, var(--flip-gradient-color) 50%);
+  background-size: 100% 200%;
+  background-position: bottom;
+  transition: background-position 0.5s ease-in-out;
+}
