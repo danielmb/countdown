@@ -1,0 +1,9 @@
+.flip [data-kind='digit'] {
+  color: white;
+  background-color: rgba(0, 0, 0, 1);
+  font-family: sans-serif;
+  line-height: 1em;
+  width: 1.1ch;
+  height: 1em;
+  text-align: center;
+}

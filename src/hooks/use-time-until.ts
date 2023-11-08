@@ -7,6 +7,23 @@ interface Timeuntil {
   milliseconds: number;
 }
 
+export const getTimeUntil = (date: Date) => {
+  const now = new Date();
+  const timeUntil = date.getTime() - now.getTime();
+  const days = Math.floor(timeUntil / (1000 * 60 * 60 * 24));
+  const hours = Math.floor(
+    (timeUntil % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60),
+  );
+  const minutes = Math.floor((timeUntil % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((timeUntil % (1000 * 60)) / 1000);
+  const milliseconds = Math.floor(timeUntil % 1000);
+  return { days, hours, minutes, seconds, milliseconds };
+};
+
+const stringifyTime = (time: number, padStart = 2) => {
+  // will turn 2 into 02
+  return time.toString().padStart(padStart, '0');
+};
 const useTimeUntil = (date: Date) => {
   const targetDateStorage = date.toISOString();
   const [timeUntil, setTimeUntil] = useState<Timeuntil>({
@@ -33,7 +50,18 @@ const useTimeUntil = (date: Date) => {
     }, 1);
     return () => clearInterval(interval);
   }, [targetDateStorage]);
-  return timeUntil;
+  const stringifiedTime = {
+    days: stringifyTime(timeUntil.days, 3),
+    hours: stringifyTime(timeUntil.hours),
+    minutes: stringifyTime(timeUntil.minutes),
+    seconds: stringifyTime(timeUntil.seconds),
+    milliseconds: stringifyTime(timeUntil.milliseconds, 3),
+  };
+  return {
+    ...timeUntil,
+    stringifiedTime,
+    targetDate: targetDateStorage,
+  };
 };
 
 export default useTimeUntil;
