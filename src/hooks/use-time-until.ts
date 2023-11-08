@@ -51,7 +51,7 @@ const useTimeUntil = (date: Date) => {
     return () => clearInterval(interval);
   }, [targetDateStorage]);
   const stringifiedTime = {
-    days: stringifyTime(timeUntil.days, 3),
+    days: stringifyTime(timeUntil.days),
     hours: stringifyTime(timeUntil.hours),
     minutes: stringifyTime(timeUntil.minutes),
     seconds: stringifyTime(timeUntil.seconds),
