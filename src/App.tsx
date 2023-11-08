@@ -14,9 +14,10 @@ import { useCron } from './hooks/use-cron';
 import { SnowOverlay } from './components/snow-overlay';
 
 function App() {
-  const [targetDate, setTargetDate] = useState(new Date());
-  const [word, setWord] = useState('God jul!');
+  const [word, setWord] = useState('God jul!  ');
+  // const [words, setWords] = useState(['God jul!']);
   const [wordLength, setWordLength] = useState(10);
+  const [marqueeIndex, setMarqueeIndex] = useState(0);
   const [now, setNow] = useState(new Date());
   const [backgroundImage, setBackgroundImage] = useState('');
   const nextCron = useCron(
@@ -34,7 +35,7 @@ function App() {
       setBackgroundImage(URL.createObjectURL(res));
     },
     {
-      // triggerInstantly: true,
+      triggerInstantly: true,
     },
   );
   const nextC = useCron('00 11 * * *', () => {
@@ -47,11 +48,35 @@ function App() {
         prev = 'God jul!';
         return prev;
       });
-    }, 25000);
+    }, 1000 * 60 * 10);
+  });
+
+  const nextC2 = useCron('*/1 * * * * *', () => {
+    setWord((prev) => {
+      if (prev === 'God lunsj!') {
+        return 'God lunsj!';
+      }
+      const word = 'God Jul!  ';
+      const totalLength = 10;
+      // move the words to the left
+
+      const newWord =
+        word.slice(marqueeIndex, totalLength) + word.slice(0, marqueeIndex);
+
+      if (marqueeIndex === totalLength) {
+        setMarqueeIndex(0);
+      }
+
+      setMarqueeIndex((prev) => {
+        return prev + 1;
+      });
+      return newWord;
+      // const randomIndex = Math.floor(Math.random() * words.length);
+      // return words[randomIndex];
+    });
   });
 
   // const timeUntil = useTimeUntil(targetDate);
-  console.log(nextCron, nextC);
   // useEffect(() => {
   //   setTargetDate((prev) => {
   //     const d = new Date(prev);
@@ -76,6 +101,9 @@ function App() {
         <div className="flex flex-col items-center justify-center">
           <div className="flex flex-row">
             <div className="flex flex-col items-center justify-center space-y-4 space-x-4">
+              <div className="flex flex-row items-center justify-center space-x-4 bg-gray-900 bg-opacity-60 rounded-sm  p-6">
+                <h1 className="text-4xl">Nedtelling til juleaften</h1>
+              </div>
               <Timer />
               <div className="flex flex-row items-center justify-center space-x-4 bg-gray-900 bg-opacity-60 rounded-sm  p-6">
                 <FlapDisplay
