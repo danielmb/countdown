@@ -80,7 +80,7 @@ function App() {
               <div className="flex flex-row items-center justify-center space-x-4 bg-gray-900 bg-opacity-60 rounded-sm  p-6">
                 <FlapDisplay
                   // chars={[...Presets.ALPHANUM].join('')}
-                  chars={`${Presets.ALPHANUM}!:).`}
+                  chars={`${Presets.ALPHANUM}!:!.`}
                   length={wordLength}
                   value={word}
                   className="text-4xl"
