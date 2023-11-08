@@ -14,7 +14,7 @@ function Timer() {
       <div className="flex flex-col items-center justify-center space-y-4 rounded-full border-2 p-6 w-96 h-96 bg-red-600 bg-opacity-60">
         <FlapDisplay
           chars={` 9876543210:`}
-          length={3}
+          length={2}
           // value={`Hello World!`}
           value={timeUntil.stringifiedTime.days}
           className="text-4xl flip"
