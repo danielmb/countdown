@@ -13,7 +13,7 @@ function Timer() {
     <div className="flex flex-row items-center justify-center space-x-4">
       <div className="flex flex-col items-center justify-center space-y-4 rounded-full border-2 p-6 w-96 h-96 bg-red-600 bg-opacity-60">
         <FlapDisplay
-          chars={` 9876543210:`}
+          chars={` 9876543210`}
           length={2}
           // value={`Hello World!`}
           value={timeUntil.stringifiedTime.days}
@@ -23,7 +23,7 @@ function Timer() {
       </div>
       <div className="flex flex-col items-center justify-center space-y-4 rounded-full border-2 p-6 w-96 h-96 bg-red-600 bg-opacity-60">
         <FlapDisplay
-          chars={` 9876543210:`}
+          chars={` 9876543210`}
           length={2}
           // value={`Hello World!`}
           value={timeUntil.stringifiedTime.hours}
@@ -33,7 +33,7 @@ function Timer() {
       </div>
       <div className="flex flex-col items-center justify-center space-y-4 rounded-full border-2 p-6 w-96 h-96 bg-red-600 bg-opacity-60">
         <FlapDisplay
-          chars={` 9876543210:`}
+          chars={` 9876543210`}
           length={2}
           // value={`Hello World!`}
           value={timeUntil.stringifiedTime.minutes}
@@ -43,7 +43,7 @@ function Timer() {
       </div>
       <div className="flex flex-col items-center justify-center space-y-4 rounded-full border-2 p-6 w-96 h-96 bg-red-600 bg-opacity-60">
         <FlapDisplay
-          chars={` 9876543210:`}
+          chars={` 9876543210`}
           length={2}
           // value={`Hello World!`}
           value={timeUntil.stringifiedTime.seconds}

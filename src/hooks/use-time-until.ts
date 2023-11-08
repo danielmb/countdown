@@ -22,7 +22,7 @@ export const getTimeUntil = (date: Date) => {
 
 const stringifyTime = (time: number, padStart = 2) => {
   // will turn 2 into 02
-  return time.toString().padStart(padStart, '0');
+  return time.toString().padStart(padStart, ' ');
 };
 const useTimeUntil = (date: Date) => {
   const targetDateStorage = date.toISOString();
