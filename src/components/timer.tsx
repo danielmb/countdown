@@ -48,19 +48,10 @@ function Timer() {
   const { isTriggered: isThirdAdvent } = useDate(getAdvents().thirdAdvent);
   const { isTriggered: isFourthAdvent } = useDate(getAdvents().fourthAdvent);
   // progress from firstAdvent to secondAdvent from 0 to 1, use Date.now() to get current time timeUntil.now is new Date()
-  const progress = useMemo(() => {
-    // const total = secondAdvent.getTime() - firstAdvent.getTime();
-    // const current = timeUntil.now.getTime() - firstAdvent.getTime();
-    const minDate = new Date('2023-11-14T03:27:00.000Z');
-    const maxDate = new Date('2023-11-14T03:29:00.000Z');
-    const total = maxDate.getTime() - minDate.getTime();
-    const current = timeUntil.now.getTime() - minDate.getTime();
-    return Math.min(Math.max(current / total, 0), 1);
-  }, [timeUntil.now]);
+
   const { stringifiedTime } = timeUntil;
   return (
     <>
-      <WindowsLoading progress={progress} />
       <div className="flex flex-row items-center justify-center space-x-4">
         {/* <div className="flex flex-col items-center justify-center space-y-4 rounded-full border-2 p-6 w-96 h-96 bg-red-600 bg-opacity-60"> */}
 

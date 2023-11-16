@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useReducer } from 'react';
+import React, { useEffect, useState, useReducer, useMemo } from 'react';
 // import reactLogo from './assets/react.svg'
 // import viteLogo from '/vite.svg'
 import './App.css';
@@ -12,9 +12,10 @@ import { FlapDisplay, Presets } from 'react-split-flap-effect';
 import Timer from './components/timer';
 import { useCron, useDate } from './hooks/use-cron';
 import { SnowOverlay } from './components/snow-overlay';
+import { useIsCurrentlyBetweenTimes } from './hooks/use-time';
+import CountDownLunch from './components/countdown-lunch';
 
 function App() {
-  const [word, setWord] = useState('God jul!  ');
   // const [words, setWords] = useState(['God jul!']);
   const [wordLength, setWordLength] = useState(10);
   const [marqueeIndex, setMarqueeIndex] = useState(0);
@@ -38,18 +39,8 @@ function App() {
       triggerInstantly: true,
     },
   );
-  const nextC = useCron('00 11 * * *', () => {
-    setWord((prev) => {
-      prev = 'God lunsj!';
-      return prev;
-    });
-    setTimeout(() => {
-      setWord((prev) => {
-        prev = 'God jul!';
-        return prev;
-      });
-    }, 1000 * 60 * 10);
-  });
+
+  const isLunch = useIsCurrentlyBetweenTimes('11:00:00', '11:30:00');
 
   const { isTriggered: isCurrentlyTrue } = useDate(
     new Date(`${new Date().getFullYear()}-11-14 02:50`),
@@ -57,31 +48,12 @@ function App() {
 
   // 11-14 2:35 am
 
-  const nextC2 = useCron('*/1 * * * * *', () => {
-    setWord((prev) => {
-      if (prev === 'God lunsj!') {
-        return 'God lunsj!';
-      }
-      const word = 'God Jul!  ';
-      const totalLength = 10;
-      // move the words to the left
-
-      const newWord =
-        word.slice(marqueeIndex, totalLength) + word.slice(0, marqueeIndex);
-
-      if (marqueeIndex === totalLength) {
-        setMarqueeIndex(0);
-      }
-
-      setMarqueeIndex((prev) => {
-        return prev + 1;
-      });
-      return newWord;
-      // const randomIndex = Math.floor(Math.random() * words.length);
-      // return words[randomIndex];
-    });
-  });
-
+  const word = useMemo(() => {
+    if (isLunch) {
+      return 'God Lunsj!';
+    }
+    return 'God Jul!';
+  }, [isLunch]);
   // const timeUntil = useTimeUntil(targetDate);
   // useEffect(() => {
   //   setTargetDate((prev) => {
@@ -110,6 +82,7 @@ function App() {
               <div className="flex flex-row items-center justify-center space-x-4 bg-gray-900 bg-opacity-60 rounded-sm  p-6">
                 <h1 className="text-4xl">Nedtelling til julaften</h1>
               </div>
+              {isLunch && <CountDownLunch />}
               <Timer />
               <div className="flex flex-row items-center justify-center space-x-4 bg-gray-900 bg-opacity-60 rounded-sm  p-6">
                 <FlapDisplay
