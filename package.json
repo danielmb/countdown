@@ -23,7 +23,8 @@
     "react-split-flap-display": "^0.4.1",
     "react-split-flap-effect": "^1.0.0",
     "usehooks-ts": "^2.9.1",
-    "vite-express": "^0.11.0"
+    "vite-express": "^0.11.0",
+    "xp.css": "^0.2.6"
   },
   "devDependencies": {
     "@types/node-cron": "^3.0.11",
@@ -37,6 +38,7 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.3",
     "postcss": "^8.4.31",
+    "sass": "^1.69.5",
     "tailwindcss": "^3.3.3",
     "typescript": "^5.0.2",
     "vite": "^4.4.5",

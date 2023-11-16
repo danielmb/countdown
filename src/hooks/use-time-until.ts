@@ -26,6 +26,7 @@ const stringifyTime = (time: number, padStart = 2) => {
 };
 const useTimeUntil = (date: Date) => {
   const targetDateStorage = date.toISOString();
+  const [now, setNow] = useState(new Date());
   const [timeUntil, setTimeUntil] = useState<Timeuntil>({
     days: 0,
     hours: 0,
@@ -47,6 +48,7 @@ const useTimeUntil = (date: Date) => {
       const seconds = Math.floor((timeUntil % (1000 * 60)) / 1000);
       const milliseconds = Math.floor(timeUntil % 1000);
       setTimeUntil({ days, hours, minutes, seconds, milliseconds });
+      setNow(now);
     }, 1);
     return () => clearInterval(interval);
   }, [targetDateStorage]);
@@ -61,6 +63,7 @@ const useTimeUntil = (date: Date) => {
     ...timeUntil,
     stringifiedTime,
     targetDate: targetDateStorage,
+    now,
   };
 };
 

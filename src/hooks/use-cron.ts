@@ -10,6 +10,7 @@ interface Cron {
 }
 interface CronOptions {
   triggerInstantly?: boolean;
+  triggerInstantlyBefore?: Date;
 }
 
 export const useCron = (
@@ -20,7 +21,12 @@ export const useCron = (
   // const [cronInstance, setCronInstance] = useState<cron.ScheduledTask>();
   const [cronInstance, setCronInstance] = useState<NodeJS.Timeout>();
   const [cron, setCron] = useState<Cron>({
-    date: options?.triggerInstantly ? new Date() : null,
+    // date: options?.triggerInstantly ? new Date() : null,
+    date: options?.triggerInstantlyBefore
+      ? options.triggerInstantlyBefore
+      : options?.triggerInstantly
+      ? new Date()
+      : null,
     isTriggered: false,
   });
   // useEffect(() => {
@@ -53,16 +59,39 @@ export const useCron = (
       return;
     }
     if (nextDate.getTime() !== cron.date.getTime()) {
-      console.log('New date detected!');
       setCron({ date: nextDate, isTriggered: false });
     }
     const now = new Date();
     if (cron.date.getTime() < now.getTime() && !cron.isTriggered) {
       onTrigger();
-      console.log('Triggered!');
       setCron((prev) => ({ ...prev, isTriggered: true }));
     }
   }, 1000);
 
   return cron;
+};
+
+interface DateOptions {
+  date: Date;
+  isTriggered: boolean;
+}
+
+export const useDate = (
+  userDate: Date,
+  // onTrigger: (date: DateOptions) => void,
+  onTrigger?: (date: DateOptions) => void | Promise<void>,
+) => {
+  const [date, setDate] = useState<DateOptions>({
+    date: userDate,
+    isTriggered: new Date().getTime() > userDate.getTime(),
+  });
+  useInterval(async () => {
+    const now = new Date();
+    if (userDate.getTime() < now.getTime() && !date.isTriggered) {
+      await onTrigger?.(date);
+      setDate((prev) => ({ ...prev, isTriggered: true }));
+    }
+  }, 1000);
+
+  return { ...date, setDate };
 };

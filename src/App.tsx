@@ -10,7 +10,7 @@ import 'react-clock/dist/Clock.css';
 import { FlapDisplay, Presets } from 'react-split-flap-effect';
 
 import Timer from './components/timer';
-import { useCron } from './hooks/use-cron';
+import { useCron, useDate } from './hooks/use-cron';
 import { SnowOverlay } from './components/snow-overlay';
 
 function App() {
@@ -50,6 +50,12 @@ function App() {
       });
     }, 1000 * 60 * 10);
   });
+
+  const { isTriggered: isCurrentlyTrue } = useDate(
+    new Date(`${new Date().getFullYear()}-11-14 02:50`),
+  );
+
+  // 11-14 2:35 am
 
   const nextC2 = useCron('*/1 * * * * *', () => {
     setWord((prev) => {
@@ -102,7 +108,7 @@ function App() {
           <div className="flex flex-row">
             <div className="flex flex-col items-center justify-center space-y-4 space-x-4">
               <div className="flex flex-row items-center justify-center space-x-4 bg-gray-900 bg-opacity-60 rounded-sm  p-6">
-                <h1 className="text-4xl">Nedtelling til juleaften</h1>
+                <h1 className="text-4xl">Nedtelling til julaften</h1>
               </div>
               <Timer />
               <div className="flex flex-row items-center justify-center space-x-4 bg-gray-900 bg-opacity-60 rounded-sm  p-6">

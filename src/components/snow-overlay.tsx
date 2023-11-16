@@ -23,11 +23,12 @@ class SnowParticle {
   }
 }
 export const SnowOverlay = () => {
-  const [wind, setWind] = useState<number>(0.1);
+  const [wind, setWind] = useState<number>(0.5);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [density, setDensity] = useState<number>(0);
   const ctx = canvasRef.current?.getContext('2d');
   // const particles: SnowParticle[] = []
-  const particles = useState<SnowParticle[]>([])[0];
+  const [particles, setParticles] = useState<SnowParticle[]>([]);
   // fill the entire screen
   // const update = () => {
   //   particles.forEach((particle, index) => {
@@ -39,10 +40,31 @@ export const SnowOverlay = () => {
   //   });
   // };
   const update = useCallback(() => {
-    particles.forEach((particle, index) => {
-      if (particle.y > window.innerHeight) {
-        return particles.splice(index, 1);
-      }
+    // particles.forEach((particle, index) => {
+    //   if (particle.y > window.innerHeight) {
+    //     return particles.splice(index, 1);
+    //   }
+    //   if (particle.x > window.innerWidth + 5) {
+    //     particle.x = -4;
+    //   }
+    //   if (particle.x < -5) {
+    //     particle.x = window.innerWidth + 4;
+    //   }
+    //   particle.radius -= 0.001 * particle.speed;
+    //   if (particle.radius < 0) {
+    //     return particles.splice(index, 1);
+    //   }
+    //   particle.y += particle.speed;
+    //   // the x should be based on the radius and the speed and the wind
+
+    //   // the bigger the radius the less the wind should affect it
+    //   // the bigger the speed the more the wind should affect it
+    //   const change = wind * (particle.radius / 5) * particle.speed;
+    //   particle.x += change;
+    // });
+    const newParticles = particles.filter((particle) => {
+      const inBounds = particle.y < window.innerHeight;
+      if (!inBounds) return false;
       if (particle.x > window.innerWidth + 5) {
         particle.x = -4;
       }
@@ -50,18 +72,16 @@ export const SnowOverlay = () => {
         particle.x = window.innerWidth + 4;
       }
       particle.radius -= 0.001 * particle.speed;
-      if (particle.radius < 0) {
-        return particles.splice(index, 1);
-      }
-      particle.y += particle.speed;
-      // the x should be based on the radius and the speed and the wind
 
-      // the bigger the radius the less the wind should affect it
-      // the bigger the speed the more the wind should affect it
-      const change = wind * (particle.radius / 5) * particle.speed;
-      particle.x += change;
+      particle.y += particle.speed;
+      // particle.x += wind * (particle.radius / 5) * particle.speed;
+      // we need to reverse so the higher radius particles are less affected by the wind
+      particle.x -= wind * (1 - particle.radius / 10) * particle.speed;
+      return particle.radius > 0;
     });
+    setParticles(newParticles);
   }, [particles, wind]);
+
   const draw = useCallback(() => {
     if (ctx) {
       ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
@@ -96,7 +116,7 @@ export const SnowOverlay = () => {
     }
   }, [windowSize, ctx]);
   const addParticle = useCallback(() => {
-    if (particles.length > 100) return;
+    if (particles.length > (windowSize.width / 4) * (density * 1.2)) return;
     const random = Math.random();
     const x = random * windowSize.width;
     const y = -5;
@@ -104,10 +124,10 @@ export const SnowOverlay = () => {
     const speed = Math.random() * 0.05 + 0.5;
     const opacity = Math.random() * 0.5;
     particles.push(new SnowParticle(x, y, radius, speed, opacity));
-  }, [particles, windowSize]);
+  }, [particles, windowSize, density]);
   useInterval(() => {
     addParticle();
-  }, 100);
+  }, 15 / density);
   useInterval(draw, 1);
   useInterval(() => {
     // create random wind casts
@@ -124,8 +144,17 @@ export const SnowOverlay = () => {
       }
       return newWind;
     });
-    console.log('wind', wind);
   }, 1000);
+  useInterval(() => {
+    setDensity((prev) => {
+      const random = Math.random() * 0.2 - 0.1;
+      setDensity((prev) => {
+        const newDensity = prev + random;
+        return Math.max(0, Math.min(2, newDensity));
+      });
+      return prev;
+    });
+  }, 60000);
   return (
     <canvas
       ref={canvasRef}
