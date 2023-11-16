@@ -41,6 +41,7 @@ function App() {
   );
 
   const isLunch = useIsCurrentlyBetweenTimes('11:00:00', '11:30:00');
+  const isLunchExtended = useIsCurrentlyBetweenTimes('11:00:00', '11:35:00');
 
   const { isTriggered: isCurrentlyTrue } = useDate(
     new Date(`${new Date().getFullYear()}-11-14 02:50`),
@@ -82,7 +83,7 @@ function App() {
               <div className="flex flex-row items-center justify-center space-x-4 bg-gray-900 bg-opacity-60 rounded-sm  p-6">
                 <h1 className="text-4xl">Nedtelling til julaften</h1>
               </div>
-              {isLunch && <CountDownLunch />}
+              {isLunchExtended && <CountDownLunch />}
               <Timer />
               <div className="flex flex-row items-center justify-center space-x-4 bg-gray-900 bg-opacity-60 rounded-sm  p-6">
                 <FlapDisplay
