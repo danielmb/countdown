@@ -61,7 +61,6 @@ function CountDownLunch() {
 
   return (
     <div>
-      <p>{now.toISOString()}</p>
       <WindowsLoading
         progress={progress}
         bodyText="Laster ned lunsj..."

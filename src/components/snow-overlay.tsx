@@ -25,7 +25,7 @@ class SnowParticle {
 export const SnowOverlay = () => {
   const [wind, setWind] = useState<number>(0.5);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [density, setDensity] = useState<number>(0);
+  const [density, setDensity] = useState<number>(1);
   const ctx = canvasRef.current?.getContext('2d');
   // const particles: SnowParticle[] = []
   const [particles, setParticles] = useState<SnowParticle[]>([]);
@@ -127,8 +127,8 @@ export const SnowOverlay = () => {
   }, [particles, windowSize, density]);
   useInterval(() => {
     addParticle();
-  }, 15 / density);
-  useInterval(draw, 1);
+  }, 20 / density);
+  useInterval(draw, 5);
   useInterval(() => {
     // create random wind casts
     setWind((prev) => {
@@ -147,6 +147,7 @@ export const SnowOverlay = () => {
   }, 1000);
   useInterval(() => {
     setDensity((prev) => {
+      console.log(prev);
       const random = Math.random() * 0.2 - 0.1;
       setDensity((prev) => {
         const newDensity = prev + random;
