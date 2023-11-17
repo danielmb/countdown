@@ -14,6 +14,7 @@ import { useCron, useDate } from './hooks/use-cron';
 import { SnowOverlay } from './components/snow-overlay';
 import { useIsCurrentlyBetweenTimes } from './hooks/use-time';
 import CountDownLunch from './components/countdown-lunch';
+import { Snow } from './components/snow-overlay2';
 
 function App() {
   // const [words, setWords] = useState(['God jul!']);
@@ -98,7 +99,7 @@ function App() {
           </div>
         </div>
       </div>
-      <SnowOverlay />
+      <Snow />
     </>
   );
 }
