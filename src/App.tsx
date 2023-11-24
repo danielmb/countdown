@@ -99,6 +99,8 @@ function App() {
           </div>
         </div>
       </div>
+      {/* Place images freely */}
+
       <Snow />
     </>
   );

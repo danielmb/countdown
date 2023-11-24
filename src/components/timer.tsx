@@ -6,6 +6,8 @@ import useTimeUntil from '../hooks/use-time-until';
 import './timer.css';
 import { useDate } from '../hooks/use-cron';
 import { FlatProgressBar } from './progress';
+import santa from '../assets/santa.png';
+
 import WindowsLoading from './windows-loading';
 const getAdvents = () => {
   const advents: string[] = [];
@@ -56,7 +58,7 @@ function Timer() {
         {/* <div className="flex flex-col items-center justify-center space-y-4 rounded-full border-2 p-6 w-96 h-96 bg-red-600 bg-opacity-60"> */}
 
         <div
-          className={`flex flex-col items-center justify-center space-y-4 rounded-full border-2 p-6 w-96 h-96 bg-red-600 bg-opacity-60 ${
+          className={`flex flex-col relative items-center justify-center space-y-4 rounded-full border-2 p-6 w-96 h-96 bg-red-600 bg-opacity-60 ${
             // isFirstAdvent ? 'bg-green-600' : ''
             'test'
           }`}
