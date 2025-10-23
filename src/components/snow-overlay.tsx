@@ -234,14 +234,15 @@ export const SnowOverlay = () => {
   const windowSize = useWindowSize();
   useEffect(() => {
     if (ctx) {
-      ctx.canvas.width = windowSize.width;
-      ctx.canvas.height = windowSize.height;
+      ctx.canvas.width = windowSize.width ?? 0;
+      ctx.canvas.height = windowSize.height ?? 0;
     }
   }, [windowSize, ctx]);
   const addParticle = useCallback(() => {
-    if (particles.length > (windowSize.width / 4) * (density * 1.2)) return;
+    if (particles.length > (windowSize.width ?? 0 / 4) * (density * 1.2))
+      return;
     const random = Math.random();
-    const x = random * windowSize.width;
+    const x = random * (windowSize.width ?? 0);
     const y = -5;
     const radius = Math.random() * 4 + 1.5;
     const speed = Math.random() * 0.05 + 0.5;
