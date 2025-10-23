@@ -18,13 +18,17 @@ import { useIsCurrentlyBetweenTimes } from './hooks/use-time';
 import CountDownLunch from './components/countdown-lunch';
 import { Snow } from './components/snow-overlay2';
 import santa from './assets/santa.png'; // Make sure you import Santa
-
+import { useKeyPress } from '@uidotdev/usehooks';
+// use key presses
 const randomBetween = (min: number, max: number) =>
   Math.floor(Math.random() * (max - min + 1)) + min;
 
 function App() {
   // const [words, setWords] = useState(['God jul!']);
   const [isSantaVisible, setIsSantaVisible] = useState(false);
+  useKeyPress('s', () => {
+    setIsSantaVisible((prev) => !prev);
+  });
 
   useEffect(() => {
     let santaTimeoutId: NodeJS.Timeout;
@@ -58,10 +62,22 @@ function App() {
   const [marqueeIndex, setMarqueeIndex] = useState(0);
   const [now, setNow] = useState(new Date());
   const [backgroundImage, setBackgroundImage] = useState('');
+  const [backgroundVideo, setBackgroundVideo] = useState('');
+
+  // Cleanup object URLs to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      if (backgroundImage) {
+        URL.revokeObjectURL(backgroundImage);
+      }
+      if (backgroundVideo) {
+        URL.revokeObjectURL(backgroundVideo);
+      }
+    };
+  }, [backgroundImage, backgroundVideo]);
   const nextCron = useCron(
     '0 * * * *',
     async () => {
-      console.log('every 10 seconds');
       const res = await fetch('/get-random-image').then((res) => {
         if (!res.ok) {
           throw new Error('Could not fetch image');
@@ -70,7 +86,18 @@ function App() {
         return res.blob();
       });
 
+      // Handle different media types
+      if (res.type === 'video/mp4') {
+        const objUrl = URL.createObjectURL(res);
+        setBackgroundVideo(objUrl);
+        setBackgroundImage(''); // Clear image when video is set
+        console.log('Video URL:', objUrl);
+        return;
+      }
+
+      // Handle image files
       setBackgroundImage(URL.createObjectURL(res));
+      setBackgroundVideo(''); // Clear video when image is set
     },
     {
       triggerInstantly: true,
@@ -104,32 +131,53 @@ function App() {
 
   return (
     <>
-      <div
-        // make sure the entire image is shown so dont crop it
-        className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white  bg-center bg-no-repeat bg-contain"
-        style={{
-          backgroundImage: `url(${backgroundImage})`,
-          // backgroundSize: 'cover',
-          // backgroundPosition: 'center',
-          // backgroundRepeat: 'no-repeat',
-        }}
-      >
-        <div className="flex flex-col items-center justify-center">
-          <div className="flex flex-row">
-            <div className="flex flex-col items-center justify-center space-y-4 space-x-4">
-              <div className="flex flex-row items-center justify-center space-x-4 bg-gray-900 bg-opacity-60 rounded-sm  p-6">
-                <h1 className="text-4xl">Nedtelling til julaften</h1>
-              </div>
-              {!isLunchExtended && <CountDownLunch />}
-              <Timer />
-              <div className="flex flex-row items-center justify-center space-x-4 bg-gray-900 bg-opacity-60 rounded-sm  p-6">
-                <FlapDisplay
-                  // chars={[...Presets.ALPHANUM].join('')}
-                  chars={`${Presets.ALPHANUM}!:!.`}
-                  length={wordLength}
-                  value={word}
-                  className="text-4xl"
-                />
+      <div className="relative flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white overflow-hidden">
+        {/* Background Video */}
+        {backgroundVideo && (
+          <video
+            className="absolute top-0 left-0 w-full h-full  z-0"
+            src={backgroundVideo}
+            autoPlay
+            // loop
+            muted
+            playsInline
+            // on end
+            onEnded={(videoEvent) => {
+              // loop again after 60_000 ms
+              setTimeout(() => {
+                (videoEvent.target as HTMLVideoElement).play();
+              }, 60_000);
+            }}
+          />
+        )}
+        {/* Background Image */}
+        {backgroundImage && !backgroundVideo && (
+          <div
+            className="absolute top-0 left-0 w-full h-full bg-center bg-no-repeat bg-contain z-0"
+            style={{
+              backgroundImage: `url(${backgroundImage})`,
+            }}
+          />
+        )}
+        {/* Content overlay */}
+        <div className="relative z-10 flex flex-col items-center justify-center">
+          <div className="flex flex-col items-center justify-center">
+            <div className="flex flex-row">
+              <div className="flex flex-col items-center justify-center space-y-4 space-x-4">
+                <div className="flex flex-row items-center justify-center space-x-4 bg-gray-900 bg-opacity-60 rounded-sm  p-6">
+                  <h1 className="text-4xl">Nedtelling til julaften</h1>
+                </div>
+                {/* {!isLunchExtended && <CountDownLunch />} */}
+                <Timer />
+                <div className="flex flex-row items-center justify-center space-x-4 bg-gray-900 bg-opacity-60 rounded-sm  p-6">
+                  <FlapDisplay
+                    // chars={[...Presets.ALPHANUM].join('')}
+                    chars={`${Presets.ALPHANUM}!:!.`}
+                    length={wordLength}
+                    value={word}
+                    className="text-4xl"
+                  />
+                </div>
               </div>
             </div>
           </div>

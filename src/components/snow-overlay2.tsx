@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useCallback } from 'react';
-import { useWindowSize } from 'usehooks-ts';
+import { useWindowSize } from '@uidotdev/usehooks';
 import { ShaderProgram } from '../lib/shaderprogram.js';
 import { snowflakeBase64 } from '../assets/snowflake.js';
 

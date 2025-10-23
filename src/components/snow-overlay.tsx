@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback, useMemo, useState } from 'react';
-import { useInterval, useWindowSize } from 'usehooks-ts';
+import { useInterval, useWindowSize } from '@uidotdev/usehooks';
 import useMousePosition from '../hooks/use-mouse';
 /*
 const holder = document.querySelector( '#snow' )

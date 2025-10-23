@@ -1,7 +1,7 @@
 // import cron from 'node-cron';
 import { parseCronExpression } from 'cron-schedule';
 import React, { useEffect, useState } from 'react';
-import { useInterval } from 'usehooks-ts';
+import { useInterval } from '@uidotdev/usehooks';
 import useTimeUntil, { getTimeUntil } from './use-time-until';
 
 interface Cron {

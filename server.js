@@ -8,6 +8,11 @@ app.use(express.static('public'));
 app.get('/get-random-image', (_, res) => {
   const folder = './public/images';
   const files = fs.readdirSync(folder);
+
+  //   .filter((file) => {
+  //   // for now only allow mp4 files
+  //   return file.endsWith('.mp4');
+  // });
   const randomFile = files[Math.floor(Math.random() * files.length)];
   res.sendFile(path.resolve(path.join(folder, randomFile)));
 });
