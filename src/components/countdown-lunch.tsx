@@ -8,7 +8,7 @@ function CountDownLunch() {
     [[number, number], [number, number]]
   >([
     [11, 0],
-    [11, 30],
+    [22, 30],
   ]);
   // const [remainingTime, setRemainingTime] = useState('0 minutter gjenstår');
   const remainingTime = useMemo(() => {
@@ -41,9 +41,6 @@ function CountDownLunch() {
     // return `${minutes} minutter og ${seconds} sekunder gjenstår`;
   }, [lunchTimeStart, lunchTimeEnd, now]);
   const progress = useMemo(() => {
-    // const total = secondAdvent.getTime() - firstAdvent.getTime();
-    // const current = timeUntil.now.getTime() - firstAdvent.getTime();
-    // const minDate = new Date('2023-11-14T03:27:00.000Z');
     const today = new Date();
     const minDate = new Date();
     minDate.setHours(lunchTimeStart[0], lunchTimeStart[1], 0, 0);

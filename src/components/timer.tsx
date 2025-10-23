@@ -30,7 +30,12 @@ const getAdvents = () => {
   return { firstAdvent, secondAdvent, thirdAdvent, fourthAdvent };
 };
 function Timer() {
-  const timeUntil = useTimeUntil(new Date('2023-12-24T17:00:00.000Z'));
+  const currentYear = new Date().getFullYear();
+  const timeUntil = useTimeUntil(
+    new Date(`${currentYear}-12-24T17:00:00.000Z`),
+  );
+  // const timeUntil = useTimeUntil(new Date('2023-12-24T17:00:00.000Z'));k
+
   const [firstAdvent, setFirstAdvent] = useState<Date>(
     // getAdvents().firstAdvent,
     new Date('2023-11-14T02:41:00.000Z'),
@@ -57,73 +62,50 @@ function Timer() {
       <div className="flex flex-row items-center justify-center space-x-4">
         {/* <div className="flex flex-col items-center justify-center space-y-4 rounded-full border-2 p-6 w-96 h-96 bg-red-600 bg-opacity-60"> */}
 
-        <div
-          className={`flex flex-col relative items-center justify-center space-y-4 rounded-full border-2 p-6 w-96 h-96 bg-red-600 bg-opacity-60 ${
-            // isFirstAdvent ? 'bg-green-600' : ''
-            'test'
-          }`}
-        >
-          <FlapDisplay
-            chars={` 9876543210`}
-            length={2}
-            // value={`Hello World!`}
-            value={timeUntil.stringifiedTime.days}
-            className="text-4xl flip"
-          />
-          <FlapDisplay
-            chars={Presets.ALPHANUM}
-            length={5}
-            value={timeUntil.days === 1 ? 'Dag' : 'Dager'}
-            className="text-4xl"
-          />
-        </div>
-        <div className="flex flex-col items-center justify-center space-y-4 rounded-full border-2 p-6 w-96 h-96 bg-red-600 bg-opacity-60">
-          <FlapDisplay
-            chars={` 9876543210`}
-            length={2}
-            // value={`Hello World!`}
-            value={timeUntil.stringifiedTime.hours}
-            className="text-4xl text-purple-50"
-          />
-          <FlapDisplay
-            chars={Presets.ALPHANUM}
-            length={5}
-            value={timeUntil.hours === 1 ? 'Time' : 'Timer'}
-            className="text-4xl"
-          />
-        </div>
-        <div className="flex flex-col items-center justify-center space-y-4 rounded-full border-2 p-6 w-96 h-96 bg-red-600 bg-opacity-60">
-          <FlapDisplay
-            chars={` 9876543210`}
-            length={2}
-            // value={`Hello World!`}
-            value={timeUntil.stringifiedTime.minutes}
-            className="text-4xl"
-          />
-          {/* <h1 className="text-4xl">Minutter</h1> */}
-          <FlapDisplay
-            chars={Presets.ALPHANUM}
-            length={8}
-            value={timeUntil.minutes === 1 ? 'minutt' : 'minutter'}
-            className="text-4xl"
-          />
-        </div>
-        <div className="flex flex-col items-center justify-center space-y-4 rounded-full border-2 p-6 w-96 h-96 bg-red-600 bg-opacity-60">
-          <FlapDisplay
-            chars={` 9876543210`}
-            length={2}
-            // value={`Hello World!`}
-            value={timeUntil.seconds.toString()}
-            className="text-4xl"
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          />
-          {/* <h1 className="text-4xl">Sekunder</h1> */}
-          <FlapDisplay
-            chars={Presets.ALPHANUM}
-            length={8}
-            value={timeUntil.seconds === 1 ? 'Sekund' : 'Sekunder'}
-            className="text-4xl"
-          />
+        <div className="grid grid-cols-2 gap-4">
+          {/* Days */}
+          <div className="flex flex-col items-center justify-center p-6 w-64 h-48 bg-gray-800 bg-opacity-70 rounded-lg shadow-xl border border-gray-700">
+            <FlapDisplay
+              chars={` 9876543210`}
+              length={2}
+              value={timeUntil.stringifiedTime.days}
+              className="text-5xl flip"
+            />
+            <p className="mt-2 text-2xl">Dager</p>
+          </div>
+
+          {/* Hours */}
+          <div className="flex flex-col items-center justify-center p-6 w-64 h-48 bg-gray-800 bg-opacity-70 rounded-lg shadow-xl border border-gray-700">
+            <FlapDisplay
+              chars={` 9876543210`}
+              length={2}
+              value={timeUntil.stringifiedTime.hours}
+              className="text-5xl flip"
+            />
+            <p className="mt-2 text-2xl">Timer</p>
+          </div>
+
+          {/* Minutes */}
+          <div className="flex flex-col items-center justify-center p-6 w-64 h-48 bg-gray-800 bg-opacity-70 rounded-lg shadow-xl border border-gray-700">
+            <FlapDisplay
+              chars={` 9876543210`}
+              length={2}
+              value={timeUntil.stringifiedTime.minutes}
+              className="text-5xl flip"
+            />
+            <p className="mt-2 text-2xl">Minutter</p>
+          </div>
+
+          {/* Seconds */}
+          <div className="flex flex-col items-center justify-center p-6 w-64 h-48 bg-gray-800 bg-opacity-70 rounded-lg shadow-xl border border-gray-700">
+            <FlapDisplay
+              chars={` 9876543210`}
+              length={2}
+              value={timeUntil.seconds.toString()}
+              className="text-5xl"
+            />
+            <p className="mt-2 text-2xl">Sekunder</p>
+          </div>
         </div>
         {/* <div>
         <h1>Millisekunder</h1>

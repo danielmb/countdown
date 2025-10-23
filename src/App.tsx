@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useReducer, useMemo } from 'react';
 // import reactLogo from './assets/react.svg'
 // import viteLogo from '/vite.svg'
+import { motion } from 'framer-motion';
+
 import './App.css';
 import 'react-datetime-picker/dist/DateTimePicker.css';
 import 'react-calendar/dist/Calendar.css';
@@ -15,9 +17,43 @@ import { SnowOverlay } from './components/snow-overlay';
 import { useIsCurrentlyBetweenTimes } from './hooks/use-time';
 import CountDownLunch from './components/countdown-lunch';
 import { Snow } from './components/snow-overlay2';
+import santa from './assets/santa.png'; // Make sure you import Santa
+
+const randomBetween = (min: number, max: number) =>
+  Math.floor(Math.random() * (max - min + 1)) + min;
 
 function App() {
   // const [words, setWords] = useState(['God jul!']);
+  const [isSantaVisible, setIsSantaVisible] = useState(false);
+
+  useEffect(() => {
+    let santaTimeoutId: NodeJS.Timeout;
+
+    const scheduleSanta = () => {
+      // Set a random time for Santa's next appearance (e.g., between 20 and 40 minutes)
+      const randomDelay = randomBetween(50_00_000, 90_00_000);
+
+      santaTimeoutId = setTimeout(() => {
+        // Santa appears
+        setIsSantaVisible(true);
+
+        // Set a timeout for how long he stays visible (e.g., 10 seconds)
+        setTimeout(() => {
+          // Santa disappears
+          setIsSantaVisible(false);
+          // Schedule the next appearance
+          scheduleSanta();
+        }, randomBetween(15_000, 30_000)); // Santa stays for 15 to 30 seconds
+      }, randomDelay);
+    };
+
+    // Start the first schedule
+    scheduleSanta();
+
+    // Cleanup function to clear the timeout if the component unmounts
+    return () => clearTimeout(santaTimeoutId);
+  }, []); // Empty dependency array ensures this runs only once
+
   const [wordLength, setWordLength] = useState(10);
   const [marqueeIndex, setMarqueeIndex] = useState(0);
   const [now, setNow] = useState(new Date());
@@ -84,7 +120,7 @@ function App() {
               <div className="flex flex-row items-center justify-center space-x-4 bg-gray-900 bg-opacity-60 rounded-sm  p-6">
                 <h1 className="text-4xl">Nedtelling til julaften</h1>
               </div>
-              {isLunchExtended && <CountDownLunch />}
+              {!isLunchExtended && <CountDownLunch />}
               <Timer />
               <div className="flex flex-row items-center justify-center space-x-4 bg-gray-900 bg-opacity-60 rounded-sm  p-6">
                 <FlapDisplay
@@ -100,6 +136,15 @@ function App() {
         </div>
       </div>
       {/* Place images freely */}
+
+      <motion.img
+        src={santa}
+        alt="Peeking Santa"
+        className="fixed bottom-0 right-0 w-48 h-auto z-10"
+        initial={{ y: 340 }} // Start fully hidden below the screen
+        animate={{ y: isSantaVisible ? 0 : 340 }} // Animate to 0 (at the bottom) or back to 200 (hidden)
+        transition={{ duration: 3, ease: 'easeOut' }} // Controls the speed of him popping up and down
+      />
 
       <Snow />
     </>

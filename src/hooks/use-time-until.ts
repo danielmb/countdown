@@ -36,7 +36,9 @@ const useTimeUntil = (date: Date) => {
   });
 
   useEffect(() => {
-    const interval = setInterval(() => {
+    let animationFrameId: number;
+
+    const update = () => {
       const targetDate = new Date(targetDateStorage);
       const now = new Date();
       const timeUntil = targetDate.getTime() - now.getTime();
@@ -49,8 +51,12 @@ const useTimeUntil = (date: Date) => {
       const milliseconds = Math.floor(timeUntil % 1000);
       setTimeUntil({ days, hours, minutes, seconds, milliseconds });
       setNow(now);
-    }, 1);
-    return () => clearInterval(interval);
+      animationFrameId = requestAnimationFrame(update);
+    };
+
+    update();
+
+    return () => cancelAnimationFrame(animationFrameId);
   }, [targetDateStorage]);
   const stringifiedTime = {
     days: stringifyTime(timeUntil.days),
