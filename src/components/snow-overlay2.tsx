@@ -1,35 +1,79 @@
 import React, { useEffect, useRef, useCallback } from 'react';
-import { useWindowSize } from '@uidotdev/usehooks';
 import { ShaderProgram } from '../lib/shaderprogram.js';
 import { snowflakeBase64 } from '../assets/snowflake.js';
+import { mapSnowfallToFlakeCount } from '../lib/snow-mapping';
 
-export const Snow: React.FC = () => {
+type SnowProps = {
+  windSpeed?: number;
+  onWindSpeedChange?: (value: number) => void;
+  flakeCount?: number;
+  onFlakeCountChange?: (value: number) => void;
+  showSpeedControl?: boolean;
+  intensityMmPerHour?: number; // snowfall in mm/hr
+};
+
+export const Snow: React.FC<SnowProps> = ({
+  windSpeed,
+  onWindSpeedChange,
+  flakeCount,
+  onFlakeCountChange,
+  showSpeedControl,
+  intensityMmPerHour,
+}) => {
   const holderRef = useRef<HTMLDivElement | null>(null);
-  const [count, setCount] = React.useState(355);
+  const [count, setCount] = React.useState(() => flakeCount ?? 355);
   const [shaderProgram, setShaderProgram] = React.useState<ShaderProgram>();
+  const [windSpeedKmh, setWindSpeedKmh] = React.useState(() => windSpeed ?? 10);
+  const windTargetRef = useRef(0);
+  const [showMps, setShowMps] = React.useState(false);
+  const kmhToShaderWind = useCallback((kmh: number) => {
+    const ms = kmh / 3.6;
+    // scale down to make wind feel gentler in the shader
+    return ms * 0.03;
+  }, []);
 
-  const onUpdate = useCallback(
-    (delta: number) => {
-      const wind = {
-        current: 0.1,
-        force: 0.1,
-        target: 100,
-        min: 0.1,
-        max: 0.1,
-        easing: 0.051,
-      };
-      wind.force += (wind.target - wind.force) * wind.easing;
-      wind.current += wind.force * (delta * 0.2);
-      shaderProgram?.uniforms.wind.set(wind.current);
-
-      if (Math.random() > 0.995) {
-        wind.target =
-          (wind.min + Math.random() * (wind.max - wind.min)) *
-          (Math.random() > 0.5 ? -1 : 1);
-      }
+  const handleWindSpeedChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const nextValue = Number(event.target.value);
+      if (Number.isNaN(nextValue)) return;
+      setWindSpeedKmh(nextValue);
+      windTargetRef.current = kmhToShaderWind(nextValue);
+      onWindSpeedChange?.(nextValue);
     },
-    [shaderProgram],
+    [kmhToShaderWind, onWindSpeedChange],
   );
+
+  // sync external flakeCount prop -> internal state
+  useEffect(() => {
+    if (typeof flakeCount === 'number' && flakeCount !== count) {
+      setCount(flakeCount);
+    }
+  }, [flakeCount, count]);
+
+  // map real snowfall intensity to visual flake count
+  useEffect(() => {
+    if (typeof intensityMmPerHour === 'number') {
+      const next = mapSnowfallToFlakeCount(intensityMmPerHour);
+      if (next !== count) {
+        setCount(next);
+        onFlakeCountChange?.(next);
+      }
+    }
+  }, [intensityMmPerHour, onFlakeCountChange, count]);
+
+  useEffect(() => {
+    if (typeof windSpeed === 'number' && windSpeed !== windSpeedKmh) {
+      setWindSpeedKmh(windSpeed);
+      windTargetRef.current = kmhToShaderWind(windSpeed);
+    }
+  }, [kmhToShaderWind, windSpeed, windSpeedKmh]);
+
+  useEffect(() => {
+    windTargetRef.current = kmhToShaderWind(windSpeedKmh);
+    if (shaderProgram) {
+      shaderProgram.uniforms.wind = windTargetRef.current;
+    }
+  }, [kmhToShaderWind, shaderProgram, windSpeedKmh]);
 
   useEffect(() => {
     const holder = holderRef.current;
@@ -38,11 +82,14 @@ export const Snow: React.FC = () => {
 
     const wind = {
       current: 0,
-      force: 0.1,
-      target: 0.1,
-      min: 0.1,
-      max: 0.1,
-      easing: 0.005,
+      // start with a softer force so changes are less abrupt
+      force: windTargetRef.current * 0.5,
+      target: windTargetRef.current,
+      // reduce spread so gusts stay closer to the target
+      min: -Math.abs(windTargetRef.current * 0.8),
+      max: Math.abs(windTargetRef.current * 0.8),
+      // slower easing for smoother transitions
+      easing: 0.01,
     };
 
     // Replace ShaderProgram with the actual implementation
@@ -177,14 +224,20 @@ export const Snow: React.FC = () => {
         this.buffers.speed = speed;
       },
       onUpdate(delta: number) {
+        wind.target = windTargetRef.current;
+        wind.min = -Math.abs(windTargetRef.current * 0.8);
+        wind.max = Math.abs(windTargetRef.current * 0.8);
         wind.force += (wind.target - wind.force) * wind.easing;
-        wind.current += wind.force * (delta * 0.2);
+        // reduce delta influence so per-frame changes are smaller
+        wind.current += wind.force * (delta * 0.08);
         this.uniforms.wind = wind.current;
 
-        if (Math.random() > 0.995) {
-          wind.target =
-            (wind.min + Math.random() * (wind.max - wind.min)) *
-            (Math.random() > 0.5 ? -1 : 1);
+        // rarer & smaller gusts
+        if (Math.random() > 0.997) {
+          const gust =
+            (Math.random() - 0.5) * Math.abs(windTargetRef.current) * 0.25;
+          wind.target = windTargetRef.current + gust;
+          wind.target = Math.min(Math.max(wind.target, wind.min), wind.max);
         }
       },
     });
@@ -197,11 +250,82 @@ export const Snow: React.FC = () => {
   }, [count]);
 
   return (
-    <div
-      ref={holderRef}
-      id="snow"
-      className="fixed top-0 left-0 w-screen h-screen z-50 pointer-events-none  "
-    ></div>
+    <>
+      <div
+        ref={holderRef}
+        id="snow"
+        className="fixed top-0 left-0 w-screen h-screen z-50 pointer-events-none"
+      ></div>
+      {showSpeedControl && (
+        <div className="fixed top-4 right-4 z-[60] pointer-events-none text-sm">
+          <label className="pointer-events-auto flex items-center gap-2 rounded-md bg-white/80 px-3 py-2 text-gray-900 shadow-lg backdrop-blur">
+            <span className="font-semibold">Wind</span>
+            {!showMps ? (
+              <input
+                type="number"
+                min={0}
+                step={1}
+                value={windSpeedKmh}
+                onChange={handleWindSpeedChange}
+                className="w-20 rounded border border-gray-300 bg-white/90 px-2 py-1 text-right text-xs text-gray-700 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                aria-label="Wind speed in kilometres per hour"
+              />
+            ) : (
+              <input
+                type="number"
+                min={0}
+                step={0.1}
+                value={windSpeedKmh / 3.6}
+                onChange={(e) => {
+                  const nextValue = Number(e.target.value);
+                  if (Number.isNaN(nextValue)) return;
+                  const kmhValue = nextValue * 3.6;
+                  setWindSpeedKmh(kmhValue);
+                  onWindSpeedChange?.(kmhValue);
+                }}
+                className="w-20 rounded border border-gray-300 bg-white/90 px-2 py-1 text-right text-xs text-gray-700 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                aria-label="Wind speed in metres per second"
+              />
+            )}
+
+            <button
+              type="button"
+              onClick={() => setShowMps((prev) => !prev)}
+              className={
+                'text-xs text-gray-600' + (!showMps ? ' font-bold' : '')
+              }
+            >
+              km/h
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowMps((prev) => !prev)}
+              className={
+                'text-xs text-gray-600' + (showMps ? ' font-bold' : '')
+              }
+            >
+              m/s
+            </button>
+            <div className="ml-3 flex items-center gap-2">
+              <label className="text-xs text-gray-600">Flakes</label>
+              <input
+                type="number"
+                min={0}
+                step={1}
+                value={count}
+                onChange={(e) => {
+                  const v = Number(e.target.value) || 0;
+                  setCount(v);
+                  onFlakeCountChange?.(v);
+                }}
+                className="w-20 rounded border border-gray-300 bg-white/90 px-2 py-1 text-right text-xs text-gray-700 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                aria-label="Number of snowflakes"
+              />
+            </div>
+          </label>
+        </div>
+      )}
+    </>
   );
 };
 

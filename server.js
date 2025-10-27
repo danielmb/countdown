@@ -14,7 +14,15 @@ app.get('/get-random-image', (_, res) => {
   //   return file.endsWith('.mp4');
   // });
   const randomFile = files[Math.floor(Math.random() * files.length)];
-  res.sendFile(path.resolve(path.join(folder, randomFile)));
+  // res.sendFile(path.resolve(path.join(folder, randomFile)));
+
+  // send path only
+  res.send(
+    path
+      .join(folder, randomFile)
+      // .replace('\\', '/'));
+      .replace(/\\/g, '/'),
+  );
 });
 
 ViteExpress.listen(app, 3001, () => console.log('Server is listening...'));

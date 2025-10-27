@@ -19,6 +19,8 @@ import CountDownLunch from './components/countdown-lunch';
 import { Snow } from './components/snow-overlay2';
 import santa from './assets/santa.png'; // Make sure you import Santa
 import { useKeyPress } from '@uidotdev/usehooks';
+import { Weather } from './components/weather';
+import Rain from './components/rain-overlay';
 // use key presses
 const randomBetween = (min: number, max: number) =>
   Math.floor(Math.random() * (max - min + 1)) + min;
@@ -26,8 +28,13 @@ const randomBetween = (min: number, max: number) =>
 function App() {
   // const [words, setWords] = useState(['God jul!']);
   const [isSantaVisible, setIsSantaVisible] = useState(false);
+  const [isDevelopment, setIsDevelopment] = useState(false);
   useKeyPress('s', () => {
     setIsSantaVisible((prev) => !prev);
+  });
+
+  useKeyPress('d', () => {
+    setIsDevelopment((prev) => !prev);
   });
 
   useEffect(() => {
@@ -63,7 +70,14 @@ function App() {
   const [now, setNow] = useState(new Date());
   const [backgroundImage, setBackgroundImage] = useState('');
   const [backgroundVideo, setBackgroundVideo] = useState('');
-
+  const [windSpeed, setWindSpeed] = useState(0);
+  const [snowfallMmPerHour, setSnowfallMmPerHour] = useState<
+    number | undefined
+  >(undefined);
+  useEffect(() => {
+    console.log('Snowfall mm/hr changed: ', snowfallMmPerHour);
+  }, [snowfallMmPerHour]);
+  const [videoIsPlaying, setVideoIsPlaying] = useState(false);
   // Cleanup object URLs to prevent memory leaks
   useEffect(() => {
     return () => {
@@ -78,17 +92,25 @@ function App() {
   const nextCron = useCron(
     '0 * * * *',
     async () => {
-      const res = await fetch('/get-random-image').then((res) => {
+      const res = await fetch('/get-random-image', {
+        headers: {
+          // 'Content-Type': 'application/json',
+          // text
+          'Content-Type': 'text/plain',
+        },
+      }).then((res) => {
         if (!res.ok) {
           throw new Error('Could not fetch image');
         }
         // the response is a file
-        return res.blob();
+        return res.text();
       });
-
+      const url = res;
       // Handle different media types
-      if (res.type === 'video/mp4') {
-        const objUrl = URL.createObjectURL(res);
+      setVideoIsPlaying(false);
+      if (res.endsWith('.mp4')) {
+        // const objUrl = URL.createObjectURL(res);
+        const objUrl = url;
         setBackgroundVideo(objUrl);
         setBackgroundImage(''); // Clear image when video is set
         console.log('Video URL:', objUrl);
@@ -96,7 +118,9 @@ function App() {
       }
 
       // Handle image files
-      setBackgroundImage(URL.createObjectURL(res));
+      // setBackgroundImage(URL.createObjectURL(res));
+      console.log('Image URL:', url);
+      setBackgroundImage(url);
       setBackgroundVideo(''); // Clear video when image is set
     },
     {
@@ -137,16 +161,26 @@ function App() {
           <video
             className="absolute top-0 left-0 w-full h-full  z-0"
             src={backgroundVideo}
-            autoPlay
             // loop
             muted
             playsInline
-            // on end
-            onEnded={(videoEvent) => {
-              // loop again after 60_000 ms
+            // on init
+            onCanPlay={(videoEvent) => {
               setTimeout(() => {
                 (videoEvent.target as HTMLVideoElement).play();
-              }, 60_000);
+              }, randomBetween(0, 60_000)); // Play after 0 to 10 seconds
+            }}
+            // on end
+            onEnded={(videoEvent) => {
+              setTimeout(() => {
+                (videoEvent.target as HTMLVideoElement).play();
+              }, randomBetween(600_000, 1_200_000)); // Replay after 10 to 20 minutes
+            }}
+            onPlay={(e) => {
+              setVideoIsPlaying(true);
+            }}
+            onPause={(e) => {
+              setVideoIsPlaying(false);
             }}
           />
         )}
@@ -178,6 +212,10 @@ function App() {
                     className="text-4xl"
                   />
                 </div>
+                <Weather
+                  setWindSpeed={setWindSpeed}
+                  onSnowfallChange={setSnowfallMmPerHour}
+                />
               </div>
             </div>
           </div>
@@ -194,7 +232,16 @@ function App() {
         transition={{ duration: 3, ease: 'easeOut' }} // Controls the speed of him popping up and down
       />
 
-      <Snow />
+      {snowfallMmPerHour && (
+        <Snow
+          windSpeed={windSpeed}
+          onWindSpeedChange={setWindSpeed}
+          intensityMmPerHour={snowfallMmPerHour}
+          showSpeedControl={isDevelopment}
+        />
+      )}
+
+      <Rain dropCount={200} />
     </>
   );
 }
