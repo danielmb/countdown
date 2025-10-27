@@ -240,8 +240,6 @@ function App() {
           showSpeedControl={isDevelopment}
         />
       )}
-
-      <Rain dropCount={200} />
     </>
   );
 }
