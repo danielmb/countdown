@@ -27,3 +27,14 @@ Create a style for this
   background-position: bottom;
   transition: background-position 0.5s ease-in-out;
 }
+
+.flip [data-kind='digit'] {
+  color: white;
+  background-color: black;
+  font-family: sans-serif;
+  line-height: 1em;
+  width: 1.1ch;
+  height: 1em;
+  text-align: center;
+  transform: rotateX(24deg);
+}

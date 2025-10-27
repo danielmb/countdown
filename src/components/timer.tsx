@@ -9,6 +9,13 @@ import { FlatProgressBar } from './progress';
 import santa from '../assets/santa.png';
 
 import WindowsLoading from './windows-loading';
+import { text } from 'stream/consumers';
+import { cn } from '../lib/utils';
+
+const ribbonBaseStyle = 'absolute bg-yellow-400';
+const ribbonVerticalStyle = `${ribbonBaseStyle} w-4 h-full top-0`;
+const ribbonHorizontalStyle = `${ribbonBaseStyle} h-4 w-full left-0`;
+
 const getAdvents = () => {
   const advents: string[] = [];
   const year = new Date().getFullYear();
@@ -28,6 +35,74 @@ const getAdvents = () => {
 
   // console.log({ firstAdvent, secondAdvent, thirdAdvent, fourthAdvent });
   return { firstAdvent, secondAdvent, thirdAdvent, fourthAdvent };
+};
+interface FlipFlapSquareProps extends React.HTMLAttributes<HTMLDivElement> {
+  value: string;
+  length: number;
+  text: string;
+  yesFlipFlap?: boolean;
+}
+const FlipFlapSquare: React.FC<FlipFlapSquareProps> = ({
+  value,
+  length,
+  text,
+  yesFlipFlap = true,
+  ...props
+}) => {
+  const stripeStyle = {
+    backgroundImage: `repeating-linear-gradient(
+      -45deg,
+      rgba(255, 255, 255, 0.1),
+      rgba(255, 255, 255, 0.1) 10px,
+      transparent 10px,
+      transparent 20px
+    )`,
+  };
+  return (
+    // The outer box remains the same
+    <div
+      // className="relative flex flex-col items-center justify-center p-6 w-64 h-48 bg-red-800 bg-opacity-80 rounded-lg shadow-xl border-2 border-yellow-400 overflow-hidden"
+      // className={cn(
+      //   'relative flex flex-col items-center justify-center p-6 w-64 h-48 bg-red-800 bg-opacity-80 rounded-lg shadow-xl border-2 border-yellow-400 overflow-hidden',
+      //   props.className || '',
+      // )}
+      className={`relative flex flex-col items-center justify-center p-6 w-64 h-48 rounded-lg shadow-xl border-2 overflow-hidden ${props.className}`}
+      style={stripeStyle}
+    >
+      {/* Ribbons stay the same */}
+      <div className={`${ribbonVerticalStyle} left-1/2 -translate-x-1/2`}></div>
+      <div
+        className={`${ribbonHorizontalStyle} top-1/2 -translate-y-1/2`}
+      ></div>
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 bg-yellow-400 rounded-full shadow-md z-[5]"></div>{' '}
+      {/* Simple circle as a 'knot' */}
+      {/* --- ADD CENTERING CLASSES HERE --- */}
+      <div className="relative z-10 flex flex-col items-center space-y-4">
+        {yesFlipFlap ? (
+          <FlapDisplay
+            chars={` 9876543210`}
+            length={length}
+            value={value}
+            className="text-5xl flip"
+          />
+        ) : (
+          // <div className="text-5xl font-mono font-bold">{value}</div>
+          <p
+            className="text-5xl font-mono font-bold text-shadow-lg"
+            style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.5)' }}
+          >
+            {value}
+          </p>
+        )}
+        <p
+          className="text-2xl text-center text-blue-800 font-bold bg-yellow-300 px-2 py-1 rounded shadow-lg bg-opacity-10"
+          style={{ textShadow: '1px 1px 2px rgba(255,255,255,0.5)' }}
+        >
+          {text}
+        </p>
+      </div>
+    </div>
+  );
 };
 function Timer() {
   const currentYear = new Date().getFullYear();
@@ -59,53 +134,41 @@ function Timer() {
   const { stringifiedTime } = timeUntil;
   return (
     <>
-      <div className="flex flex-row items-center justify-center space-x-4">
+      <div className="flex flex-row items-center justify-center space-x-3">
         {/* <div className="flex flex-col items-center justify-center space-y-4 rounded-full border-2 p-6 w-96 h-96 bg-red-600 bg-opacity-60"> */}
 
-        <div className="grid grid-cols-2 gap-4">
-          {/* Days */}
-          <div className="flex flex-col items-center justify-center p-6 w-64 h-48 bg-gray-800 bg-opacity-70 rounded-lg shadow-xl border border-gray-700">
-            <FlapDisplay
-              chars={` 9876543210`}
-              length={2}
-              value={timeUntil.stringifiedTime.days}
-              className="text-5xl flip"
-            />
-            <p className="mt-2 text-2xl">Dager</p>
-          </div>
+        <div className="grid grid-cols-2 gap-6">
+          <FlipFlapSquare
+            value={timeUntil.stringifiedTime.days}
+            length={2}
+            text="Dager"
+            yesFlipFlap={false}
+            className="bg-red-800 border-yellow-400 bg-opacity-70"
+          />
 
-          {/* Hours */}
-          <div className="flex flex-col items-center justify-center p-6 w-64 h-48 bg-gray-800 bg-opacity-70 rounded-lg shadow-xl border border-gray-700">
-            <FlapDisplay
-              chars={` 9876543210`}
-              length={2}
-              value={timeUntil.stringifiedTime.hours}
-              className="text-5xl flip"
-            />
-            <p className="mt-2 text-2xl">Timer</p>
-          </div>
+          <FlipFlapSquare
+            value={timeUntil.stringifiedTime.hours}
+            length={2}
+            text="Timer"
+            yesFlipFlap={false}
+            className="bg-green-800 border-yellow-400 bg-opacity-70"
+          />
 
-          {/* Minutes */}
-          <div className="flex flex-col items-center justify-center p-6 w-64 h-48 bg-gray-800 bg-opacity-70 rounded-lg shadow-xl border border-gray-700">
-            <FlapDisplay
-              chars={` 9876543210`}
-              length={2}
-              value={timeUntil.stringifiedTime.minutes}
-              className="text-5xl flip"
-            />
-            <p className="mt-2 text-2xl">Minutter</p>
-          </div>
+          <FlipFlapSquare
+            value={timeUntil.stringifiedTime.minutes}
+            length={2}
+            text="Minutter"
+            yesFlipFlap={false}
+            className="bg-red-800 border-yellow-400 bg-opacity-70"
+          />
 
-          {/* Seconds */}
-          <div className="flex flex-col items-center justify-center p-6 w-64 h-48 bg-gray-800 bg-opacity-70 rounded-lg shadow-xl border border-gray-700">
-            <FlapDisplay
-              chars={` 9876543210`}
-              length={2}
-              value={timeUntil.seconds.toString()}
-              className="text-5xl"
-            />
-            <p className="mt-2 text-2xl">Sekunder</p>
-          </div>
+          <FlipFlapSquare
+            value={timeUntil.stringifiedTime.seconds}
+            length={2}
+            text="Sekunder"
+            yesFlipFlap={false}
+            className="bg-green-800 border-yellow-400 bg-opacity-70"
+          />
         </div>
         {/* <div>
         <h1>Millisekunder</h1>

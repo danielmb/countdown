@@ -3,10 +3,10 @@ import React, { useEffect, useState, useReducer, useMemo } from 'react';
 // import viteLogo from '/vite.svg'
 import { motion } from 'framer-motion';
 
-import './App.css';
 import 'react-datetime-picker/dist/DateTimePicker.css';
 import 'react-calendar/dist/Calendar.css';
 import 'react-clock/dist/Clock.css';
+import './App.css';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import { FlapDisplay, Presets } from 'react-split-flap-effect';
@@ -194,33 +194,36 @@ function App() {
           />
         )}
         {/* Content overlay */}
-        <div className="relative z-10 flex flex-col items-center justify-center">
-          <div className="flex flex-col items-center justify-center">
-            <div className="flex flex-row">
-              <div className="flex flex-col items-center justify-center space-y-4 space-x-4">
-                <div className="flex flex-row items-center justify-center space-x-4 bg-gray-900 bg-opacity-60 rounded-sm  p-6">
-                  <h1 className="text-4xl">Nedtelling til julaften</h1>
-                </div>
-                {/* {!isLunchExtended && <CountDownLunch />} */}
-                <Timer />
-                <div className="flex flex-row items-center justify-center space-x-4 bg-gray-900 bg-opacity-60 rounded-sm  p-6">
-                  <FlapDisplay
-                    // chars={[...Presets.ALPHANUM].join('')}
-                    chars={`${Presets.ALPHANUM}!:!.`}
-                    length={wordLength}
-                    value={word}
-                    className="text-4xl"
+        {!videoIsPlaying && (
+          <div className="relative z-10 flex flex-col items-center justify-center">
+            <div className="flex flex-col items-center justify-center">
+              <div className="flex flex-row">
+                <div className="flex flex-col items-center justify-center space-y-4 space-x-4">
+                  <div className="flex flex-row items-center justify-center space-x-4 bg-gray-900 bg-opacity-60 rounded-sm  p-6">
+                    <h1 className="text-4xl">Nedtelling til julaften</h1>
+                  </div>
+                  {/* {!isLunchExtended && <CountDownLunch />} */}
+                  <Timer />
+                  <div className="flex flex-row items-center justify-center space-x-4 bg-gray-900 bg-opacity-60 rounded-sm  p-6">
+                    <FlapDisplay
+                      // chars={[...Presets.ALPHANUM].join('')}
+                      chars={`${Presets.ALPHANUM}!:!.`}
+                      length={wordLength}
+                      value={word}
+                      className="text-4xl"
+                    />
+                  </div>
+                  <Weather
+                    setWindSpeed={setWindSpeed}
+                    onSnowfallChange={setSnowfallMmPerHour}
                   />
                 </div>
-                <Weather
-                  setWindSpeed={setWindSpeed}
-                  onSnowfallChange={setSnowfallMmPerHour}
-                />
               </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
+
       {/* Place images freely */}
 
       <motion.img
@@ -232,7 +235,7 @@ function App() {
         transition={{ duration: 3, ease: 'easeOut' }} // Controls the speed of him popping up and down
       />
 
-      {snowfallMmPerHour && (
+      {snowfallMmPerHour !== undefined && (
         <Snow
           windSpeed={windSpeed}
           onWindSpeedChange={setWindSpeed}
