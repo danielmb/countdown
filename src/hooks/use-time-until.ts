@@ -37,8 +37,16 @@ const useTimeUntil = (date: Date) => {
 
   useEffect(() => {
     let animationFrameId: number;
+    let lastUpdate = 0;
 
-    const update = () => {
+    const update = (timestamp: number) => {
+      // Only update state once per second to avoid infinite loops
+      if (timestamp - lastUpdate < 1000) {
+        animationFrameId = requestAnimationFrame(update);
+        return;
+      }
+      lastUpdate = timestamp;
+
       const targetDate = new Date(targetDateStorage);
       const now = new Date();
       const timeUntil = targetDate.getTime() - now.getTime();
@@ -54,7 +62,7 @@ const useTimeUntil = (date: Date) => {
       animationFrameId = requestAnimationFrame(update);
     };
 
-    update();
+    animationFrameId = requestAnimationFrame(update);
 
     return () => cancelAnimationFrame(animationFrameId);
   }, [targetDateStorage]);

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useReducer, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 // import reactLogo from './assets/react.svg'
 // import viteLogo from '/vite.svg'
 import { motion } from 'framer-motion';
@@ -13,14 +13,11 @@ import { FlapDisplay, Presets } from 'react-split-flap-effect';
 
 import Timer from './components/timer';
 import { useCron, useDate } from './hooks/use-cron';
-import { SnowOverlay } from './components/snow-overlay';
 import { useIsCurrentlyBetweenTimes } from './hooks/use-time';
-import CountDownLunch from './components/countdown-lunch';
 import { Snow } from './components/snow-overlay2';
 import santa from './assets/santa.png'; // Make sure you import Santa
 import { useKeyPress } from '@uidotdev/usehooks';
 import { Weather } from './components/weather';
-import Rain from './components/rain-overlay';
 // use key presses
 const randomBetween = (min: number, max: number) =>
   Math.floor(Math.random() * (max - min + 1)) + min;
@@ -89,7 +86,7 @@ function App() {
       }
     };
   }, [backgroundImage, backgroundVideo]);
-  const nextCron = useCron(
+  const { date, isTriggered, reschedule } = useCron(
     '0 * * * *',
     async () => {
       const res = await fetch('/get-random-image', {
@@ -131,10 +128,6 @@ function App() {
   const isLunch = useIsCurrentlyBetweenTimes('11:00:00', '11:30:00');
   const isLunchExtended = useIsCurrentlyBetweenTimes('11:00:00', '11:35:00');
 
-  const { isTriggered: isCurrentlyTrue } = useDate(
-    new Date(`${new Date().getFullYear()}-11-14 02:50`),
-  );
-
   // 11-14 2:35 am
 
   const word = useMemo(() => {
@@ -172,6 +165,16 @@ function App() {
             }}
             // on end
             onEnded={(videoEvent) => {
+              // If a specific video ended, allow scheduling of a new background media fetch
+              console.log('Video ended:', backgroundVideo);
+              if (
+                backgroundVideo?.includes(
+                  'Santa_Flying_Over_Building_Video.mp4',
+                )
+              ) {
+                // kick the scheduler to compute the next run from "now"
+                reschedule?.();
+              }
               setTimeout(() => {
                 (videoEvent.target as HTMLVideoElement).play();
               }, randomBetween(600_000, 1_200_000)); // Replay after 10 to 20 minutes
