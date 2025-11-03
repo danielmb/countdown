@@ -1,0 +1,55 @@
+name: Deploy to Self-Hosted Windows
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+
+      - name: Install PM2 globally (if not installed)
+        run: |
+          if (!(Get-Command pm2 -ErrorAction SilentlyContinue)) {
+            npm install -g pm2
+            pm2 install pm2-windows-startup
+            pm2-startup install
+          }
+        shell: powershell
+
+      - name: Stop existing PM2 process
+        run: |
+          pm2 delete countdown 2>$null
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "No existing process to stop"
+          }
+        shell: powershell
+        continue-on-error: true
+
+      - name: Start application with PM2
+        run: |
+          pm2 start server.js --name countdown --node-args="--max-old-space-size=2048"
+          pm2 save
+        shell: powershell
+
+      - name: Show PM2 status
+        run: pm2 status
+        shell: powershell
