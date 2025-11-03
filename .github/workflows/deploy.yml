@@ -32,8 +32,9 @@ jobs:
         run: |
           if (!(Get-Command pm2 -ErrorAction SilentlyContinue)) {
             npm install -g pm2
-            pm2 install pm2-windows-startup
-            pm2-startup install
+            Write-Host "PM2 installed successfully"
+          } else {
+            Write-Host "PM2 already installed"
           }
         shell: powershell
 
@@ -52,6 +53,27 @@ jobs:
           pm2 save
         shell: powershell
 
+      - name: Setup PM2 startup (run as current user)
+        run: |
+          Write-Host "Setting up PM2 to start on boot for user: $env:USERNAME"
+          try {
+            pm2 startup
+            Write-Host "PM2 startup configured successfully"
+          } catch {
+            Write-Host "PM2 startup setup failed, but app is still running: $_"
+          }
+        shell: powershell
+        continue-on-error: true
+
       - name: Show PM2 status
         run: pm2 status
+        shell: powershell
+
+      - name: Show runner context info
+        run: |
+          Write-Host "Current user: $env:USERNAME"
+          Write-Host "User domain: $env:USERDOMAIN"
+          Write-Host "User profile: $env:USERPROFILE"
+          Write-Host "Node version: $(node --version)"
+          Write-Host "NPM prefix: $(npm config get prefix)"
         shell: powershell
