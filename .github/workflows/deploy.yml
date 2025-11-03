@@ -64,8 +64,8 @@ jobs:
           Start-ScheduledTask -TaskName $taskName
           Start-Sleep -Seconds 3
 
-          Write-Host "✅ Countdown app started via Task Scheduler"
-          Write-Host "📋 Task will auto-start on boot and restart on failure"
+          Write-Host "[SUCCESS] Countdown app started via Task Scheduler"
+          Write-Host "[INFO] Task will auto-start on boot and restart on failure"
         shell: powershell
 
       - name: Show app status
@@ -79,9 +79,9 @@ jobs:
           Write-Host "`n=== Server Status ==="
           try {
             $response = Invoke-WebRequest -Uri "http://localhost:3001/health" -UseBasicParsing -TimeoutSec 5
-            Write-Host "✅ Server is running - HTTP $($response.StatusCode)"
+            Write-Host "[SUCCESS] Server is running - HTTP $($response.StatusCode)"
           } catch {
-            Write-Host "❌ Server not yet ready: $_"
+            Write-Host "[ERROR] Server not yet ready: $_"
           }
         shell: powershell
 
