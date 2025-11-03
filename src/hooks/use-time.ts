@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useInterval } from '@uidotdev/usehooks';
+import { useInterval } from './use-interval';
 
 type Clock =
   | `${number}:${number}:${number}`

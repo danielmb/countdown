@@ -16,7 +16,7 @@ import { useCron, useDate } from './hooks/use-cron';
 import { useIsCurrentlyBetweenTimes } from './hooks/use-time';
 import { Snow } from './components/snow-overlay2';
 import santa from './assets/santa.png'; // Make sure you import Santa
-import { useKeyPress } from '@uidotdev/usehooks';
+import { useKeyPress } from './hooks/use-key-press';
 import { Weather } from './components/weather';
 import { useAutoReload } from './hooks/use-auto-reload';
 // use key presses

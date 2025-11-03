@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useInterval } from '@uidotdev/usehooks';
+import { useInterval } from '../hooks/use-interval';
 import './flap-display.css';
 interface PanelProps {
   letter: string;

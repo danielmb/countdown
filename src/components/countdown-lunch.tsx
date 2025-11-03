@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { useInterval } from '@uidotdev/usehooks';
+import { useInterval } from '../hooks/use-interval';
 import WindowsLoading from './windows-loading';
 
 function CountDownLunch() {
