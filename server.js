@@ -5,6 +5,13 @@ import path from 'path';
 const app = express();
 app.use(express.static('public'));
 
+// Server start time for auto-reload detection
+const serverStartTime = Date.now();
+
+app.get('/health', (_, res) => {
+  res.json({ startTime: serverStartTime });
+});
+
 app.get('/get-random-image', (_, res) => {
   const folder = './public/images';
   const files = fs.readdirSync(folder);

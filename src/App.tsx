@@ -18,11 +18,15 @@ import { Snow } from './components/snow-overlay2';
 import santa from './assets/santa.png'; // Make sure you import Santa
 import { useKeyPress } from '@uidotdev/usehooks';
 import { Weather } from './components/weather';
+import { useAutoReload } from './hooks/use-auto-reload';
 // use key presses
 const randomBetween = (min: number, max: number) =>
   Math.floor(Math.random() * (max - min + 1)) + min;
 
 function App() {
+  // Auto-reload when server restarts (checks every 10 seconds)
+  useAutoReload(10000);
+
   // const [words, setWords] = useState(['God jul!']);
   const [isSantaVisible, setIsSantaVisible] = useState(false);
   const [isDevelopment, setIsDevelopment] = useState(false);
