@@ -112,16 +112,16 @@ export const Weather: React.FC<WeatherProps> = ({
       </div>
       <p className="text-3xl font-bold">{Math.round(weather.temperature)}°C</p>
 
-      {snowDepth !== null && snowDepth > 0 && (
+      {/* {snowDepth !== null && snowDepth > 0 && (
         <p className="text-xl mt-2">
           Snødybde: {Math.round(snowDepth * 100)} cm
         </p>
-      )}
+      )} */}
 
       {/* Show snowfall if it's a positive number */}
-      {snowfall !== null && snowfall > 0 && (
+      {/* {snowfall !== null && snowfall > 0 && (
         <p className="text-lg mt-1">Siste time: {snowfall} cm</p>
-      )}
+      )} */}
     </div>
   );
 };
