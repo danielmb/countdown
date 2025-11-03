@@ -28,7 +28,7 @@ Production mode serves pre-built static files from `dist/` without file watchers
 The app auto-deploys to a self-hosted Windows machine via GitHub Actions:
 
 1. **Stops all Node processes** to release file locks
-2. **Checks out code** 
+2. **Checks out code**
 3. **Builds the application** (`npm run build`)
 4. **Creates a Windows Scheduled Task** that:
    - Runs `node server.js` (production mode)
@@ -39,6 +39,7 @@ The app auto-deploys to a self-hosted Windows machine via GitHub Actions:
 ## Auto-Reload Feature
 
 The browser automatically refreshes when the server restarts:
+
 - Client polls `/health` endpoint every 10 seconds
 - Detects server restart via changed start time
 - Triggers page reload to show new version
