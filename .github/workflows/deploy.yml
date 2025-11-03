@@ -41,6 +41,8 @@ jobs:
       - name: Stop existing PM2 process
         run: |
           pm2 delete countdown 2>$null
+          # Remove the buggy pm2-windows-startup module if it exists
+          pm2 delete pm2-windows-startup 2>$null
           if ($LASTEXITCODE -ne 0) {
             Write-Host "No existing process to stop"
           }
@@ -53,17 +55,14 @@ jobs:
           pm2 save
         shell: powershell
 
-      - name: Setup PM2 startup (run as current user)
+      - name: Create Windows startup script
         run: |
-          Write-Host "Setting up PM2 to start on boot for user: $env:USERNAME"
-          try {
-            pm2 startup
-            Write-Host "PM2 startup configured successfully"
-          } catch {
-            Write-Host "PM2 startup setup failed, but app is still running: $_"
-          }
+          Write-Host "Creating Windows startup batch file for user: $env:USERNAME"
+          $batchContent = "@echo off`ncd /d `"$((Get-Location).Path)`"`npm2 resurrect`npm2 start server.js --name countdown --node-args=`"--max-old-space-size=2048`" 2>nul"
+          $batchContent | Out-File -FilePath "start-countdown.bat" -Encoding ASCII
+          Write-Host "Startup script created: start-countdown.bat"
+          Write-Host "To auto-start on boot, add this to Windows startup folder or Task Scheduler"
         shell: powershell
-        continue-on-error: true
 
       - name: Show PM2 status
         run: pm2 status
