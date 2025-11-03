@@ -48,14 +48,14 @@ jobs:
           $nodePath = (Get-Command node).Source
 
           # Create task action to run node server.js directly
-          $taskAction = New-ScheduledTaskAction -Execute $nodePath -Argument "server.js --max-old-space-size=2048" -WorkingDirectory $workingDir
+          $taskAction = New-ScheduledTaskAction -Execute $nodePath -Argument "--max-old-space-size=2048 server.js" -WorkingDirectory $workingDir
 
           # Trigger: start immediately and on boot
           $triggerNow = New-ScheduledTaskTrigger -Once -At (Get-Date).AddSeconds(5)
           $triggerBoot = New-ScheduledTaskTrigger -AtStartup
 
-          # Settings: keep running, restart on failure
-          $taskSettings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -RestartOnFailure -RestartCount 3 -RestartInterval (New-TimeSpan -Minutes 1)
+          # Settings: keep running, allow manual start
+          $taskSettings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Days 365)
 
           # Register the task
           Register-ScheduledTask -TaskName $taskName -Action $taskAction -Trigger $triggerNow,$triggerBoot -Settings $taskSettings -User $env:USERNAME -RunLevel Highest -Force
@@ -65,13 +65,17 @@ jobs:
           Start-Sleep -Seconds 3
 
           Write-Host "[SUCCESS] Countdown app started via Task Scheduler"
-          Write-Host "[INFO] Task will auto-start on boot and restart on failure"
+          Write-Host "[INFO] Task will auto-start on boot"
         shell: powershell
 
       - name: Show app status
         run: |
           Write-Host "=== Task Scheduler Status ==="
-          Get-ScheduledTask -TaskName "CountdownApp" | Select-Object TaskName,State,LastRunTime
+          try {
+            Get-ScheduledTask -TaskName "CountdownApp" | Select-Object TaskName,State,LastRunTime
+          } catch {
+            Write-Host "[WARN] Scheduled task 'CountdownApp' not found: $_"
+          }
 
           Write-Host "`n=== Node Processes ==="
           Get-Process -Name "node" -ErrorAction SilentlyContinue | Select-Object Id,ProcessName,StartTime
