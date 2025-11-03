@@ -11,10 +11,6 @@ jobs:
     runs-on: self-hosted
 
     steps:
-      - name: Set PowerShell Execution Policy
-        run: Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
-        shell: powershell
-
       - name: Checkout code
         uses: actions/checkout@v5
 
@@ -25,7 +21,7 @@ jobs:
           cache: "npm"
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --legacy-peer-deps
         shell: powershell
 
       - name: Build application
