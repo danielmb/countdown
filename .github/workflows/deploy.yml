@@ -19,7 +19,7 @@ jobs:
 
           # Kill ALL node processes to release file locks
           Get-Process -Name "node" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
-          
+
           # Wait a moment for processes to fully terminate
           Start-Sleep -Seconds 2
 

@@ -19,12 +19,10 @@ app.get('/get-random-image', (_, res) => {
 
   const randomFile = files[Math.floor(Math.random() * files.length)];
 
-  res.send(
-    path
-      .join(folder, randomFile)
-      .replace(/\\/g, '/'),
-  );
+  res.send(path.join(folder, randomFile).replace(/\\/g, '/'));
 });
 
 // Use ViteExpress for development with HMR
-ViteExpress.listen(app, 3001, () => console.log('Development server listening on port 3001...'));
+ViteExpress.listen(app, 3001, () =>
+  console.log('Development server listening on port 3001...'),
+);
