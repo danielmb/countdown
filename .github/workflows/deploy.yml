@@ -28,44 +28,61 @@ jobs:
         run: npm run build
         shell: powershell
 
-      - name: Install PM2 globally (if not installed)
+      - name: Stop existing countdown app
         run: |
-          if (!(Get-Command pm2 -ErrorAction SilentlyContinue)) {
-            npm install -g pm2
-            Write-Host "PM2 installed successfully"
-          } else {
-            Write-Host "PM2 already installed"
-          }
-        shell: powershell
+          # Stop existing scheduled task
+          Stop-ScheduledTask -TaskName "CountdownApp" -ErrorAction SilentlyContinue
+          Unregister-ScheduledTask -TaskName "CountdownApp" -Confirm:$false -ErrorAction SilentlyContinue
 
-      - name: Stop existing PM2 process
-        run: |
-          pm2 delete countdown 2>$null
-          # Remove the buggy pm2-windows-startup module if it exists
-          pm2 delete pm2-windows-startup 2>$null
-          if ($LASTEXITCODE -ne 0) {
-            Write-Host "No existing process to stop"
-          }
+          # Kill any existing node processes running server.js
+          Get-Process -Name "node" -ErrorAction SilentlyContinue | Where-Object {$_.MainWindowTitle -like "*server.js*" -or $_.CommandLine -like "*server.js*"} | Stop-Process -Force -ErrorAction SilentlyContinue
+
+          Write-Host "Stopped existing countdown app processes"
         shell: powershell
         continue-on-error: true
 
-      - name: Start application with PM2
+      - name: Start countdown app via Task Scheduler
         run: |
-          pm2 start server.js --name countdown --node-args="--max-old-space-size=2048"
-          pm2 save
+          $taskName = "CountdownApp"
+          $workingDir = (Get-Location).Path
+          $nodePath = (Get-Command node).Source
+
+          # Create task action to run node server.js directly
+          $taskAction = New-ScheduledTaskAction -Execute $nodePath -Argument "server.js --max-old-space-size=2048" -WorkingDirectory $workingDir
+
+          # Trigger: start immediately and on boot
+          $triggerNow = New-ScheduledTaskTrigger -Once -At (Get-Date).AddSeconds(5)
+          $triggerBoot = New-ScheduledTaskTrigger -AtStartup
+
+          # Settings: keep running, restart on failure
+          $taskSettings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -RestartOnFailure -RestartCount 3 -RestartInterval (New-TimeSpan -Minutes 1)
+
+          # Register the task
+          Register-ScheduledTask -TaskName $taskName -Action $taskAction -Trigger $triggerNow,$triggerBoot -Settings $taskSettings -User $env:USERNAME -RunLevel Highest -Force
+
+          # Start it now
+          Start-ScheduledTask -TaskName $taskName
+          Start-Sleep -Seconds 3
+
+          Write-Host "✅ Countdown app started via Task Scheduler"
+          Write-Host "📋 Task will auto-start on boot and restart on failure"
         shell: powershell
 
-      - name: Create Windows startup script
+      - name: Show app status
         run: |
-          Write-Host "Creating Windows startup batch file for user: $env:USERNAME"
-          $batchContent = "@echo off`ncd /d `"$((Get-Location).Path)`"`npm2 resurrect`npm2 start server.js --name countdown --node-args=`"--max-old-space-size=2048`" 2>nul"
-          $batchContent | Out-File -FilePath "start-countdown.bat" -Encoding ASCII
-          Write-Host "Startup script created: start-countdown.bat"
-          Write-Host "To auto-start on boot, add this to Windows startup folder or Task Scheduler"
-        shell: powershell
+          Write-Host "=== Task Scheduler Status ==="
+          Get-ScheduledTask -TaskName "CountdownApp" | Select-Object TaskName,State,LastRunTime
 
-      - name: Show PM2 status
-        run: pm2 status
+          Write-Host "`n=== Node Processes ==="
+          Get-Process -Name "node" -ErrorAction SilentlyContinue | Select-Object Id,ProcessName,StartTime
+
+          Write-Host "`n=== Server Status ==="
+          try {
+            $response = Invoke-WebRequest -Uri "http://localhost:3001/health" -UseBasicParsing -TimeoutSec 5
+            Write-Host "✅ Server is running - HTTP $($response.StatusCode)"
+          } catch {
+            Write-Host "❌ Server not yet ready: $_"
+          }
         shell: powershell
 
       - name: Show runner context info
