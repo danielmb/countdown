@@ -20,8 +20,11 @@ jobs:
           # Kill ALL node processes to release file locks
           Get-Process -Name "node" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
 
-          # Wait a moment for processes to fully terminate
-          Start-Sleep -Seconds 2
+          # Also kill any esbuild processes
+          Get-Process -Name "esbuild" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+
+          # Wait for processes to fully terminate and release file handles
+          Start-Sleep -Seconds 5
 
           Write-Host "Stopped existing countdown app processes"
         shell: powershell
