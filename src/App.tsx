@@ -165,7 +165,7 @@ function App() {
             onCanPlay={(videoEvent) => {
               setTimeout(() => {
                 (videoEvent.target as HTMLVideoElement).play();
-              }, randomBetween(0, 60_000)); // Play after 0 to 10 seconds
+              }, randomBetween(1000000, 60_000_000)); // Play after 0 to 10 seconds
             }}
             // on end
             onEnded={(videoEvent) => {
