@@ -38,6 +38,26 @@ function App() {
     setIsDevelopment((prev) => !prev);
   });
 
+  // add a listener on the body to hide the cursor after 5 seconds of no mouse movement
+  useEffect(() => {
+    let cursorTimeoutId: NodeJS.Timeout;
+
+    const handleMouseMove = () => {
+      clearTimeout(cursorTimeoutId);
+      document.body.style.cursor = 'auto';
+      cursorTimeoutId = setTimeout(() => {
+        document.body.style.cursor = 'none';
+      }, 5000);
+    };
+
+    document.body.addEventListener('mousemove', handleMouseMove);
+
+    return () => {
+      clearTimeout(cursorTimeoutId);
+      document.body.removeEventListener('mousemove', handleMouseMove);
+    };
+  }, []);
+
   useEffect(() => {
     let santaTimeoutId: NodeJS.Timeout;
 
