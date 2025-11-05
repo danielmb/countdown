@@ -224,7 +224,7 @@ function App() {
                     setWindSpeed={setWindSpeed}
                     onSnowfallChange={(val) => {
                       // if none set to 0.1
-                      setSnowfallMmPerHour(val || 0.1);
+                      setSnowfallMmPerHour(val || 5);
                     }}
                   />
                 </div>
