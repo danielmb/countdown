@@ -43,9 +43,9 @@ jobs:
         run: npm ci --legacy-peer-deps
         shell: powershell
 
-      - name: Build application
-        run: npm run build
-        shell: powershell
+      # - name: Build application
+      #   run: npm run build
+      #   shell: powershell
 
       - name: Start countdown app via Task Scheduler
         run: |
@@ -54,7 +54,7 @@ jobs:
           $nodePath = (Get-Command node).Source
 
           # Create task action to run node server.js directly
-          $taskAction = New-ScheduledTaskAction -Execute $nodePath -Argument "--max-old-space-size=2048 server.js" -WorkingDirectory $workingDir
+          $taskAction = New-ScheduledTaskAction -Execute $nodePath -Argument "--max-old-space-size=2048 server.dev.js" -WorkingDirectory $workingDir
 
           # Trigger: start immediately and on boot
           $triggerNow = New-ScheduledTaskTrigger -Once -At (Get-Date).AddSeconds(5)

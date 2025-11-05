@@ -20,6 +20,8 @@ export class ShaderProgram {
   private buffers: any; // Assuming type for buffers
   private texture: WebGLTexture | null;
   private time: { start: number; old: number };
+  private loggedZeroCount: boolean;
+  private loggedDrawError: boolean;
   constructor(holder: HTMLElement, options: any = {}) {
     options = Object.assign(
       {
@@ -119,6 +121,13 @@ export class ShaderProgram {
       antialias: options.antialias,
     }) as WebGLRenderingContext;
 
+    // Ensure the canvas overlays the holder reliably in all build modes.
+    canvas.style.position = 'absolute';
+    canvas.style.top = '0';
+    canvas.style.left = '0';
+    canvas.style.pointerEvents = 'none';
+    canvas.style.zIndex = '9999';
+
     this.count = 0;
     this.gl = gl;
     this.canvas = canvas;
@@ -136,6 +145,8 @@ export class ShaderProgram {
     this.uniforms = {};
     this.buffers = {};
     this.texture = null;
+    this.loggedZeroCount = false;
+    this.loggedDrawError = false;
     holder.appendChild(canvas);
 
     this.createProgram(options.vertex, options.fragment);
@@ -380,13 +391,19 @@ export class ShaderProgram {
       const buffer = buffers[name];
 
       buffer.buffer = this.createBuffer('a_' + name, buffer.size);
+      if (!buffer.buffer) {
+        console.warn('[ShaderProgram] Failed to create buffer for', name);
+      }
 
       Object.defineProperty(values, name, {
         set: (data) => {
           buffers[name].data = data;
           this.setBuffer(name, data);
 
-          if (name == 'position') this.count = buffers.position.data.length / 3;
+          if (name == 'position') {
+            this.count = buffers.position.data.length / 3;
+            this.loggedZeroCount = false;
+          }
         },
         get: () => buffers[name].data,
       });
@@ -481,7 +498,19 @@ export class ShaderProgram {
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
+      console.log('[ShaderProgram] texture loaded', {
+        width: textureImage.width,
+        height: textureImage.height,
+      });
+
       // gl.generateMipmap( gl.TEXTURE_2D )
+    };
+
+    textureImage.onerror = (event) => {
+      console.warn('[ShaderProgram] texture failed to load', {
+        error: event,
+      });
+      this.uniforms.hasTexture = 0;
     };
 
     textureImage.src = src;
@@ -500,6 +529,12 @@ export class ShaderProgram {
     if (this.count > 0) {
       gl.clear(gl.COLOR_BUFFER_BIT);
       gl.drawArrays(gl.POINTS, 0, this.count);
+
+      const error = gl.getError();
+      if (error !== gl.NO_ERROR && !this.loggedDrawError) {
+        this.loggedDrawError = true;
+        console.warn('[ShaderProgram] WebGL draw error', error);
+      }
     }
 
     this.onUpdate(delta);

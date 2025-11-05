@@ -46,6 +46,10 @@ export const Snow: React.FC<SnowProps> = ({
   // sync external flakeCount prop -> internal state
   useEffect(() => {
     if (typeof flakeCount === 'number' && flakeCount !== count) {
+      console.log('[Snow] sync flakeCount prop -> state', {
+        incoming: flakeCount,
+        previous: count,
+      });
       setCount(flakeCount);
     }
   }, [flakeCount, count]);
@@ -54,6 +58,10 @@ export const Snow: React.FC<SnowProps> = ({
   useEffect(() => {
     if (typeof intensityMmPerHour === 'number') {
       const next = mapSnowfallToFlakeCount(intensityMmPerHour);
+      console.log('[Snow] intensity mapped', {
+        intensity: intensityMmPerHour,
+        mapped: next,
+      });
       if (next !== count) {
         setCount(next);
         onFlakeCountChange?.(next);
@@ -80,6 +88,16 @@ export const Snow: React.FC<SnowProps> = ({
 
     if (!holder) return;
 
+    let updateLogsLeft = 10;
+
+    console.log('[Snow] creating shader program', {
+      count,
+      holderSize: {
+        width: holder.offsetWidth,
+        height: holder.offsetHeight,
+      },
+    });
+
     const wind = {
       current: 0,
       // start with a softer force so changes are less abrupt
@@ -102,8 +120,10 @@ export const Snow: React.FC<SnowProps> = ({
         wind: { type: 'float', value: 0 },
       },
       buffers: {
+        position: { size: 3, data: [] },
+        color: { size: 4, data: [] },
         size: { size: 1, data: [] },
-        rotation: { size: 1, data: [] },
+        rotation: { size: 3, data: [] },
         speed: { size: 3, data: [] },
       },
       vertex: `
@@ -154,24 +174,32 @@ export const Snow: React.FC<SnowProps> = ({
     }`,
       fragment: `
     precision highp float;
+        precision highp float;
 
-    uniform sampler2D u_texture;
+        uniform sampler2D u_texture;
+        uniform int u_hasTexture;
 
-    varying vec4 v_color;
-    varying float v_rotation;
+        varying vec4 v_color;
+        varying float v_rotation;
 
-    void main() {
+        void main() {
 
-      vec2 rotated = vec2(
-        cos(v_rotation) * (gl_PointCoord.x - 0.5) + sin(v_rotation) * (gl_PointCoord.y - 0.5) + 0.5,
-        cos(v_rotation) * (gl_PointCoord.y - 0.5) - sin(v_rotation) * (gl_PointCoord.x - 0.5) + 0.5
-      );
+          vec2 rotated = vec2(
+            cos(v_rotation) * (gl_PointCoord.x - 0.5) + sin(v_rotation) * (gl_PointCoord.y - 0.5) + 0.5,
+            cos(v_rotation) * (gl_PointCoord.y - 0.5) - sin(v_rotation) * (gl_PointCoord.x - 0.5) + 0.5
+          );
 
-      vec4 snowflake = texture2D(u_texture, rotated);
+          vec4 snowflake = texture2D(u_texture, rotated);
+          if (u_hasTexture == 0) {
+            snowflake = vec4(1.0, 1.0, 1.0, 1.0);
+          }
 
-      gl_FragColor = vec4(snowflake.rgb, snowflake.a * v_color.a);
+          float alpha = snowflake.a * v_color.a;
+          vec3 rgb = mix(vec3(1.0, 1.0, 1.0), snowflake.rgb, float(u_hasTexture));
 
-    }`,
+          gl_FragColor = vec4(rgb, alpha);
+
+        }`,
       onResize(w: number, h: number, dpi: number) {
         //  const position = [],
         //    color = [],
@@ -215,13 +243,34 @@ export const Snow: React.FC<SnowProps> = ({
           size.push(5 * Math.random() * 4 * ((h * dpi) / 1000));
         });
 
+        console.log('[Snow] onResize buffers populated', {
+          requestedCount: count,
+          computedCount: (w / h) * count,
+          resolution: { w, h, dpi },
+          bufferLengths: {
+            position: position.length,
+            color: color.length,
+            rotation: rotation.length,
+            size: size.length,
+            speed: speed.length,
+          },
+        });
+
         this.uniforms.worldSize = [width, height, depth];
 
+        // Derive the expected count directly instead of relying on setter side-effects.
+        const flakeCount = Math.floor(position.length / 3);
         this.buffers.position = position;
         this.buffers.color = color;
         this.buffers.rotation = rotation;
         this.buffers.size = size;
         this.buffers.speed = speed;
+
+        this.count = flakeCount;
+        console.log('[Snow] onResize count after buffers', {
+          shaderCount: this.count,
+          flakeCount,
+        });
       },
       onUpdate(delta: number) {
         wind.target = windTargetRef.current;
@@ -232,6 +281,15 @@ export const Snow: React.FC<SnowProps> = ({
         wind.current += wind.force * (delta * 0.08);
         this.uniforms.wind = wind.current;
 
+        if (updateLogsLeft > 0) {
+          updateLogsLeft -= 1;
+          console.log('[Snow] onUpdate tick', {
+            delta,
+            wind,
+            shaderCount: this.count,
+          });
+        }
+
         // rarer & smaller gusts
         if (Math.random() > 0.997) {
           const gust =
@@ -241,6 +299,7 @@ export const Snow: React.FC<SnowProps> = ({
         }
       },
     });
+    console.log('[Snow] shader program created', snow);
     setShaderProgram(snow);
     // Cleanup function
     return () => {
