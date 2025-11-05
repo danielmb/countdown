@@ -74,7 +74,7 @@ function App() {
   const [windSpeed, setWindSpeed] = useState(0);
   const [snowfallMmPerHour, setSnowfallMmPerHour] = useState<
     number | undefined
-  >(0.1);
+  >(1);
   useEffect(() => {
     console.log('Snowfall mm/hr changed: ', snowfallMmPerHour);
   }, [snowfallMmPerHour]);
