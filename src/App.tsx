@@ -208,6 +208,7 @@ function App() {
                 <div className="flex flex-col items-center justify-center space-y-4 space-x-4">
                   <div className="flex flex-row items-center justify-center space-x-4 bg-gray-900 bg-opacity-60 rounded-sm  p-6">
                     <h1 className="text-4xl">Nedtelling til julaften!</h1>
+<p>Gratulerer med dagen Kristin!</p>
                   </div>
                   {/* {!isLunchExtended && <CountDownLunch />} */}
                   <Timer />
