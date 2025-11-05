@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useCallback } from 'react';
-import { ShaderProgram } from '../lib/shaderprogram.js';
-import { snowflakeBase64 } from '../assets/snowflake.js';
+import { ShaderProgram } from '../lib/shaderprogram.ts';
+import { snowflakeBase64 } from '../assets/snowflake.ts';
 import { mapSnowfallToFlakeCount } from '../lib/snow-mapping';
 
 type SnowProps = {
