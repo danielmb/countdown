@@ -19,13 +19,14 @@ import santa from './assets/santa.png'; // Make sure you import Santa
 import { useKeyPress } from './hooks/use-key-press';
 import { Weather } from './components/weather';
 import { useAutoReload } from './hooks/use-auto-reload';
+import { formatDuration, hours, minutes, seconds } from './lib/number-helper';
 // use key presses
 const randomBetween = (min: number, max: number) =>
   Math.floor(Math.random() * (max - min + 1)) + min;
 
 function App() {
   // Auto-reload when server restarts (checks every 10 seconds)
-  useAutoReload(10000);
+  useAutoReload(seconds(10));
 
   // const [words, setWords] = useState(['God jul!']);
   const [isSantaVisible, setIsSantaVisible] = useState(false);
@@ -63,7 +64,7 @@ function App() {
 
     const scheduleSanta = () => {
       // Set a random time for Santa's next appearance (e.g., between 20 and 40 minutes)
-      const randomDelay = randomBetween(50_00_000, 90_00_000);
+      const randomDelay = randomBetween(minutes(20), minutes(40));
 
       santaTimeoutId = setTimeout(() => {
         // Santa appears
@@ -75,7 +76,7 @@ function App() {
           setIsSantaVisible(false);
           // Schedule the next appearance
           scheduleSanta();
-        }, randomBetween(15_000, 30_000)); // Santa stays for 15 to 30 seconds
+        }, randomBetween(seconds(15), seconds(30))); // Santa stays for 15 to 30 seconds
       }, randomDelay);
     };
 
@@ -183,31 +184,63 @@ function App() {
             playsInline
             // on init
             onCanPlay={(videoEvent) => {
-              setTimeout(() => {
-                (videoEvent.target as HTMLVideoElement).play();
-              }, randomBetween(1000000, 60_000_000)); // Play after 0 to 10 seconds
+              // const delayUntilNextPlay = randomBetween(
+              //   seconds(10),
+              //   seconds(10),
+              // );
+              // setTimeout(() => {
+              //   (videoEvent.target as HTMLVideoElement).play();
+              // }, delayUntilNextPlay);
+              // console.log(
+              //   'Video can play, scheduled to play in ms:',
+              //   formatDuration(delayUntilNextPlay),
+              // );
             }}
             // on end
             onEnded={(videoEvent) => {
               // If a specific video ended, allow scheduling of a new background media fetch
               console.log('Video ended:', backgroundVideo);
-              if (
-                backgroundVideo?.includes(
-                  'Santa_Flying_Over_Building_Video.mp4',
-                )
-              ) {
-                // kick the scheduler to compute the next run from "now"
-                reschedule?.();
-              }
+              const delayUntilNextPlay = randomBetween(
+                seconds(60),
+                minutes(20),
+              );
+              console.log(
+                'Scheduling next play in ms:',
+                formatDuration(delayUntilNextPlay),
+              );
+              // if (
+              //   backgroundVideo?.includes(
+              //     'Santa_Flying_Over_Building_Video.mp4',
+              //   )
+              // ) {
+              //   // kick the scheduler to compute the next run from "now"
+              //   reschedule?.();
+              // }
+
               setTimeout(() => {
                 (videoEvent.target as HTMLVideoElement).play();
-              }, randomBetween(600_000, 1_200_000)); // Replay after 10 to 20 minutes
+                // }, randomBetween(minutes(10), minutes(60))); // Replay after 10 to 60 minutes
+              }, delayUntilNextPlay);
             }}
             onPlay={(e) => {
               setVideoIsPlaying(true);
             }}
             onPause={(e) => {
               setVideoIsPlaying(false);
+            }}
+            onLoadedData={(e) => {
+              console.log('Video loaded:', backgroundVideo);
+              const delayUntilNextPlay = randomBetween(
+                seconds(60),
+                minutes(20),
+              );
+              console.log(
+                'Scheduling next play in ms:',
+                formatDuration(delayUntilNextPlay),
+              );
+              setTimeout(() => {
+                (e.target as HTMLVideoElement).play();
+              }, delayUntilNextPlay);
             }}
           />
         )}
